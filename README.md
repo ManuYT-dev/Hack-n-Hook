@@ -58,7 +58,6 @@ The game supports both traditional PC controls and a custom hardware fishing con
 - Unity
 - C#
 - Custom Controller Hardware
-- Pixel Art Assets
 
 ---
 
