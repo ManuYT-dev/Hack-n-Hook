@@ -80,7 +80,7 @@ The game supports both traditional PC controls and a custom hardware fishing con
 
 # Development
 
-This game was created during a hackathon within a limited timeframe. The goal was to create a unique fishing experience while integrating custom hardware into the gameplay.
+This game was created during a hackathon within a limited timeframe. The goal was to create a fishing experience while integrating custom hardware into the gameplay.
 
 ---
 
