@@ -91,7 +91,3 @@ This game was created during a hackathon within a limited timeframe. The goal wa
 - [@ManuYT-dev](https://github.com/ManuYT-dev)
 - [@ITzZysn](https://github.com/ITzZysn)
 - [@csharp-maxxer](https://github.com/csharp-maxxer)
-
----
-
-### Tight lines and happy fishing! 🎣
