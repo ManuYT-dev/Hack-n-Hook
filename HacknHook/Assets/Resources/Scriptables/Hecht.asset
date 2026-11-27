@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8178737a93a54c342b917c903e800005, type: 3}
   m_Name: Hecht
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableFish
-  fishName: 
-  speed: 0
-  boostedSpeed: 0
-  defaultPrice: 0
-  roamRadius: 0
-  huntRadius: 0
-  fishType: 0
+  fishName: Hecht
+  speed: 35
+  boostedSpeed: 40
+  defaultPrice: 10
+  roamRadius: 120
+  huntRadius: 160
+  fishType: 2
   sprite: {fileID: 0}
