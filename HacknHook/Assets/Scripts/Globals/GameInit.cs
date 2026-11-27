@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public static class GameInit
 {
+    #region Public Funcs
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Init()
     {
@@ -19,4 +20,5 @@ public static class GameInit
         Application.quitting -= GameInit.Closing;
         Controlls.Kill();
     }
+    #endregion
 }

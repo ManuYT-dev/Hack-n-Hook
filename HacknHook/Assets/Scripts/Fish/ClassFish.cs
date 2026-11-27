@@ -1,5 +1,3 @@
-using Assets.Scripts.FishMovement;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ClassFish : MonoBehaviour
@@ -20,16 +18,18 @@ public class ClassFish : MonoBehaviour
     private FishType fishType;
     private float speed;
     private float boostedSpeed;
-    private float stopDistance = 0.3f;
-    private float rotationSpeed = 4f;
-    private float maxVerticalAngle = 30f;
+    [Header("Movement Settings")]
+    [SerializeField] private float stopDistance = 0.3f;
+    [SerializeField] private float rotationSpeed = 4f;
+    [SerializeField] private float maxVerticalAngle = 30f;
     #endregion
 
     #region Bait Detection
     private ClassBait targetBait;
     private bool isHunting = false;
     private bool hasEaten = false;
-    private float huntTimeout = 5f;
+    [Header("Bait Detection")]
+    [SerializeField] private float huntTimeout = 5f;
     private float huntTimer = 0f;
     #endregion
 
@@ -52,7 +52,7 @@ public class ClassFish : MonoBehaviour
     {
         this.fishType = FishType.Barsch;
         ScriptableFish scriptableFish = Resources.Load<ScriptableFish>("Scriptables/Barsch");
-        InitFish(scriptableFish);
+        this.InitFish(scriptableFish);
     }
 
     public void InitFish(ScriptableFish scriptableFish, float weight_multiplier = 1, float x_pos = 0, float y_pos = 0)
@@ -65,7 +65,7 @@ public class ClassFish : MonoBehaviour
         this.roamRadius = scriptableFish.RoamRadius;
         this.huntRadius = scriptableFish.HuntRadius;
         this.fishType = scriptableFish.FishTypeCurrent;
-        
+
         this.rectTransform = this.GetComponent<RectTransform>();
         this.rectTransform.anchoredPosition = new Vector2(x_pos, y_pos);
         this.roamCenter = new Vector2(x_pos, y_pos);

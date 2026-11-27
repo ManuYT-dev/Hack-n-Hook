@@ -9,9 +9,12 @@ using UnityEngine.InputSystem.Utilities;
 [StructLayout(LayoutKind.Explicit, Size = 16)]
 public struct BleControllerState : IInputStateTypeInfo
 {
+    #region Format
     public static FourCC Format => new FourCC('B', 'L', 'E', 'C');
     public FourCC format => Format;
+    #endregion
 
+    #region State Fields
     [InputControl(name = "rell", layout = "Button", bit = 0)]
     [InputControl(name = "throw", layout = "Button", bit = 1)]
     [InputControl(name = "strike", layout = "Button", bit = 2)]
@@ -33,6 +36,7 @@ public struct BleControllerState : IInputStateTypeInfo
     [InputControl(name = "drive", layout = "Axis")]
     [FieldOffset(12)]
     public float drive;
+    #endregion
 }
 
 #if UNITY_EDITOR
@@ -41,6 +45,7 @@ public struct BleControllerState : IInputStateTypeInfo
 [InputControlLayout(stateType = typeof(BleControllerState), displayName = "BLE Controller")]
 public class BleControllerDevice : InputDevice
 {
+    #region Properties
     public static BleControllerDevice current { get; private set; }
 
     public ButtonControl rell { get; private set; }
@@ -56,9 +61,13 @@ public class BleControllerDevice : InputDevice
     public ButtonControl toggleFishing { get; private set; }
     public ButtonControl boost { get; private set; }
     public ButtonControl pause { get; private set; }
+    #endregion
 
+    #region Private Variables
     private BleControllerState _state;
+    #endregion
 
+    #region Initialization
     static BleControllerDevice() => RegisterLayout();
 
     public static void RegisterLayout() => InputSystem.RegisterLayout<BleControllerDevice>();
@@ -69,7 +78,9 @@ public class BleControllerDevice : InputDevice
         current = InputSystem.GetDevice<BleControllerDevice>() ?? InputSystem.AddDevice<BleControllerDevice>();
         return current;
     }
+    #endregion
 
+    #region InputDevice Overrides
     protected override void FinishSetup()
     {
         base.FinishSetup();
@@ -94,7 +105,9 @@ public class BleControllerDevice : InputDevice
     {
         if (current == this) current = null;
     }
+    #endregion
 
+    #region Public Funcs
     public void ApplyPacket(byte[] buf, int size)
     {
         if (buf == null || size < 1) return;
@@ -140,7 +153,9 @@ public class BleControllerDevice : InputDevice
 
         InputSystem.QueueStateEvent(this, this._state);
     }
+    #endregion
 
+    #region Private Funcs
     private static float ReadNormalizedInt16(byte[] buf, int offset)
     {
         short raw = (short)(buf[offset] | (buf[offset + 1] << 8));
@@ -162,4 +177,5 @@ public class BleControllerDevice : InputDevice
         (3, 0) => 10, // Global: Pause
         _ => -1
     };
+    #endregion
 }
