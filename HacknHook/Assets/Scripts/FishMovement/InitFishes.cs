@@ -21,7 +21,7 @@ public static class InitFishes
     private static void CreateCanvas()
     {
         // Suche nach existierendem Canvas
-        canvas = Object.FindObjectOfType<Canvas>();
+        canvas = Object.FindAnyObjectByType<Canvas>();
 
         if (canvas == null)
         {
@@ -50,7 +50,7 @@ public static class InitFishes
     {
         Debug.Log("[InitFishes.CreateFishes] Erstelle 12 Fische...");
         List<ClassFish> fishes = new List<ClassFish>();
-        ScriptableFish scriptableFish = Resources.Load<ScriptableFish>("Scriptables/Barsch");
+        ScriptableFish scriptableFish = Resources.Load<ScriptableFish>("Scriptables/Forelle");
 
         if (scriptableFish.SpriteFish == null)
         {
@@ -67,7 +67,7 @@ public static class InitFishes
             image.sprite = scriptableFish.SpriteFish;
 
             RectTransform rectTransform = obj.GetComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(100f, 100f);
+            rectTransform.sizeDelta = new Vector2(160f, 70f);
             rectTransform.anchoredPosition = new Vector2(Random.Range(-400f, 400f), Random.Range(-200f, 200f));
 
             ClassFish fish = obj.AddComponent<ClassFish>();
