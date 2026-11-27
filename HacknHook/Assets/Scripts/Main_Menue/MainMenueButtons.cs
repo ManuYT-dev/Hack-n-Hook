@@ -6,12 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class MainMenueButtons : MonoBehaviour
 {
+    #region Unity Funcs
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Start()
     {
         Debug.Log("[ LOADED ] Loaded MainMenueButtons");
     }
+    #endregion
 
+    #region Public Funcs
     public void NewGameButtonPressed()
     {
         Debug.Log("[ BUTTONPRESSED ] New Game Button Pressed");
@@ -33,6 +36,7 @@ public class MainMenueButtons : MonoBehaviour
         Debug.Log("[ BUTTONPRESSED ] Quit Game Button Pressed");
         Application.Quit();
     }
+    #endregion
 
     // Update is called once per frame
     //void Update()

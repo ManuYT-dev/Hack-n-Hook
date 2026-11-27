@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public static class InitFishes
 {
+    #region Private Variables
     private static Transform parent;
     private static Sprite baitSprite;
     private static Canvas canvas;
+    #endregion
 
+    #region Public Funcs
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     public static void Start()
     {
@@ -17,7 +20,9 @@ public static class InitFishes
         StartBaitSpawner();
         Debug.Log("[InitFishes] Initialisierung abgeschlossen.");
     }
+    #endregion
 
+    #region Private Funcs
     private static void CreateCanvas()
     {
         // Suche nach existierendem Canvas
@@ -93,21 +98,26 @@ public static class InitFishes
 
         GameObject spawnerObj = new GameObject("BaitSpawner");
         spawnerObj.transform.SetParent(parent, false);
-        
+
         BaitSpawner spawner = spawnerObj.AddComponent<BaitSpawner>();
         spawner.Initialize(parent, baitSprite);
         Debug.Log("[InitFishes.StartBaitSpawner] BaitSpawner erfolgreich initialisiert.");
     }
+    #endregion
 }
 
 public class BaitSpawner : MonoBehaviour
 {
+    #region Private Variables
     private Transform parent;
     private Sprite baitSprite;
-    private float spawnInterval = 5f;
+    [Header("Spawn Settings")]
+    [SerializeField] private float spawnInterval = 5f;
     private float spawnTimer = 0f;
     private int baitCount = 0;
+    #endregion
 
+    #region Public Funcs
     public void Initialize(Transform parentTransform, Sprite sprite)
     {
         this.parent = parentTransform;
@@ -115,7 +125,9 @@ public class BaitSpawner : MonoBehaviour
         this.spawnTimer = this.spawnInterval;
         Debug.Log($"[BaitSpawner.Initialize] BaitSpawner initialisiert mit Spawn-Intervall: {this.spawnInterval}s");
     }
+    #endregion
 
+    #region Unity Funcs
     private void Update()
     {
         this.spawnTimer -= Time.deltaTime;
@@ -125,7 +137,9 @@ public class BaitSpawner : MonoBehaviour
             this.spawnTimer = this.spawnInterval;
         }
     }
+    #endregion
 
+    #region Private Funcs
     private void SpawnBait()
     {
         this.baitCount++;
@@ -143,4 +157,5 @@ public class BaitSpawner : MonoBehaviour
         ClassBait bait = baitObj.AddComponent<ClassBait>();
         Debug.Log($"[BaitSpawner.SpawnBait] Bait #{this.baitCount} gespawnt an Position ({rectTransform.anchoredPosition.x:F1}, {rectTransform.anchoredPosition.y:F1})");
     }
+    #endregion
 }

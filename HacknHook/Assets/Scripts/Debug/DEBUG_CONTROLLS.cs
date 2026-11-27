@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public class DEBUG_CONTROLLS : MonoBehaviour
 {
+    #region Unity Funcs
     private void OnEnable()
     {
         foreach (InputAction action in Controlls.inputActions)
@@ -20,4 +21,5 @@ public class DEBUG_CONTROLLS : MonoBehaviour
     {
         Debug.Log($"[CONTROLLS] {ctx.action.actionMap.name}.{ctx.action.name} ({ctx.control?.path})");
     }
+    #endregion
 }
