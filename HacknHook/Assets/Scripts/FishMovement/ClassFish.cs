@@ -1,14 +1,16 @@
 using Assets.Scripts.FishMovement;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ClassFish : MonoBehaviour
 {
     #region Properties
+
+    float defaultPrice;
+
     #region Positions
-    private float roamRadius = 100f;
-    private float huntRadius = 180f;
+    private float roamRadius;
+    private float huntRadius;
     private Vector2 roamCenter;
     private Vector2 targetPosition;
     private Vector2 currentDirection;
@@ -16,8 +18,8 @@ public class ClassFish : MonoBehaviour
 
     #region Fish Properties
     private FishType fishType;
-    private float speed = 20f;
-    private float boostedSpeed = 40f;
+    private float speed;
+    private float boostedSpeed;
     private float stopDistance = 0.3f;
     private float rotationSpeed = 4f;
     private float maxVerticalAngle = 30f;
@@ -27,11 +29,10 @@ public class ClassFish : MonoBehaviour
     private ClassBait targetBait;
     private bool isHunting = false;
     private bool hasEaten = false;
-    private float huntTimeout = 5f; // Jagd-Timeout in Sekunden
+    private float huntTimeout = 5f;
     private float huntTimer = 0f;
     #endregion
 
-    private Image image;
     private RectTransform rectTransform;
     private string fishName;
 
@@ -50,22 +51,24 @@ public class ClassFish : MonoBehaviour
     public void InitFish()
     {
         this.fishType = FishType.Barsch;
-        this.rectTransform = this.GetComponent<RectTransform>();
-        this.roamCenter = this.rectTransform.anchoredPosition;
-        this.image = this.GetComponent<Image>();
-        this.targetRotation = this.transform.rotation;
-        this.fishName = this.gameObject.name;
-
-        Debug.Log($"[ClassFish.InitFish] {this.fishName} initialisiert als {this.fishType} an Position ({this.roamCenter.x:F1}, {this.roamCenter.y:F1})");
-        this.GenerateNewTarget();
+        ScriptableFish scriptableFish = Resources.Load<ScriptableFish>("Scriptables/Barsch");
+        InitFish(scriptableFish);
     }
 
-    public void InitFish(FishType fishType, float x_pos, float y_pos)
+    public void InitFish(ScriptableFish scriptableFish, float weight_multiplier = 1, float x_pos = 0, float y_pos = 0)
     {
-        this.fishType = fishType;
+        this.fishType = scriptableFish.FishTypeCurrent;
+        this.fishName = scriptableFish.FishName;
+        this.speed = scriptableFish.Speed;
+        this.boostedSpeed = scriptableFish.BoostedSpeed;
+        this.defaultPrice = scriptableFish.DefaultPrice;
+        this.roamRadius = scriptableFish.RoamRadius;
+        this.huntRadius = scriptableFish.HuntRadius;
+        this.fishType = scriptableFish.FishTypeCurrent;
+        
         this.rectTransform = this.GetComponent<RectTransform>();
+        this.rectTransform.anchoredPosition = new Vector2(x_pos, y_pos);
         this.roamCenter = new Vector2(x_pos, y_pos);
-        this.image = this.GetComponent<Image>();
         this.targetRotation = this.transform.rotation;
         this.fishName = this.gameObject.name;
 
@@ -96,7 +99,6 @@ public class ClassFish : MonoBehaviour
             this.huntTimer -= Time.deltaTime;
             if (this.huntTimer <= 0f)
             {
-                // Jagd aufgeben
                 Debug.Log($"[ClassFish.Update] {this.fishName} gibt Jagd auf Bait auf (Timeout nach {this.huntTimeout}s)");
                 this.isHunting = false;
                 this.targetBait = null;
@@ -135,11 +137,13 @@ public class ClassFish : MonoBehaviour
         ClassBait closestBait = null;
         float closestDistance = this.huntRadius;
 
+        Vector2 fishPos = this.rectTransform.anchoredPosition;
+
         foreach (ClassBait bait in allBaits)
         {
             if (bait == null || bait.IsDestroyed()) continue;
 
-            float distance = Vector2.Distance(this.rectTransform.anchoredPosition, bait.GetPosition());
+            float distance = Vector2.Distance(fishPos, bait.GetPosition());
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -195,14 +199,16 @@ public class ClassFish : MonoBehaviour
             this.targetPosition = this.targetBait.GetPosition();
         }
 
-        Vector2 directionToTarget = (this.targetPosition - this.rectTransform.anchoredPosition).normalized;
-        float distanceToTarget = Vector2.Distance(this.rectTransform.anchoredPosition, this.targetPosition);
+        Vector2 currentPos = this.rectTransform.anchoredPosition;
+        Vector2 directionToTarget = (this.targetPosition - currentPos).normalized;
+        float distanceToTarget = Vector2.Distance(currentPos, this.targetPosition);
 
         float currentSpeed = this.isHunting ? this.boostedSpeed : this.speed;
 
         if (distanceToTarget > this.stopDistance)
         {
-            this.rectTransform.anchoredPosition += directionToTarget * currentSpeed * Time.deltaTime;
+            Vector2 newPos = currentPos + directionToTarget * currentSpeed * Time.deltaTime;
+            this.rectTransform.anchoredPosition = newPos;
             this.UpdateSpriteDirection(directionToTarget);
         }
         else
@@ -216,8 +222,8 @@ public class ClassFish : MonoBehaviour
             }
             else if (!this.isHunting)
             {
-                Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} erreicht Zielposition ({this.targetPosition.x:F1}, {this.targetPosition.y:F1}) - wartet");
                 this.rectTransform.anchoredPosition = this.targetPosition;
+                Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} erreicht Zielposition ({this.targetPosition.x:F1}, {this.targetPosition.y:F1}) - wartet");
                 this.currentState = FishState.Waiting;
                 this.stateTimer = Random.Range(1f, 3f);
             }
@@ -246,7 +252,8 @@ public class ClassFish : MonoBehaviour
         // Fisch bleibt am Bait-Ort stecken
         if (this.targetBait != null && !this.targetBait.IsDestroyed())
         {
-            this.rectTransform.anchoredPosition = this.targetBait.GetPosition();
+            Vector2 baitPos = this.targetBait.GetPosition();
+            this.rectTransform.anchoredPosition = baitPos;
         }
         else
         {
@@ -273,11 +280,6 @@ public class ClassFish : MonoBehaviour
 
     private void UpdateSpriteDirection(Vector2 direction)
     {
-        if (this.image == null)
-        {
-            return;
-        }
-
         bool shouldFlip = direction.x < 0f;
 
         if (shouldFlip != this.isFlipped)
