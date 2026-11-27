@@ -5,9 +5,12 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class BackgroundImageCycler : MonoBehaviour
 {
+    #region Private Variables
     private Image background;
     private Sprite[] frames = new Sprite[10];
+    #endregion
 
+    #region Unity Funcs
     private void Awake()
     {
         background = GetComponent<Image>();
@@ -29,7 +32,9 @@ public class BackgroundImageCycler : MonoBehaviour
 
         StartCoroutine(ShowNextFrame());
     }
+    #endregion
 
+    #region Private Funcs
     private IEnumerator ShowNextFrame()
     {
         int index = 0;
@@ -41,4 +46,5 @@ public class BackgroundImageCycler : MonoBehaviour
             yield return new WaitForSeconds(0.22f);
         }
     }
+    #endregion
 }
