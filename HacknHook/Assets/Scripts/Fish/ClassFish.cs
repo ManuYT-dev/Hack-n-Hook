@@ -4,7 +4,7 @@ public class ClassFish : MonoBehaviour
 {
     #region Properties
 
-    float defaultPrice;
+    private float defaultPrice;
 
     #region Positions
     private float roamRadius;
@@ -45,6 +45,13 @@ public class ClassFish : MonoBehaviour
     private bool isFlipped = false;
     #endregion
 
+    #region Public Properties
+    public FishType FishTypeCurrent => this.fishType;
+    public string FishName => this.fishName;
+    public float DefaultPrice => this.defaultPrice;
+    public bool IsHooked => this.hasEaten && this.IsBaitAvailable(this.targetBait) && this.targetBait.ClaimedByFish == this;
+    #endregion
+
     #endregion
 
     #region Init Fish
@@ -52,25 +59,39 @@ public class ClassFish : MonoBehaviour
     {
         this.fishType = FishType.Barsch;
         ScriptableFish scriptableFish = Resources.Load<ScriptableFish>("Scriptables/Barsch");
+        if (scriptableFish == null)
+        {
+            Debug.LogError($"[ClassFish.InitFish] Scriptables/Barsch konnte nicht geladen werden für {this.gameObject.name}");
+            return;
+        }
+
         this.InitFish(scriptableFish);
     }
 
     public void InitFish(ScriptableFish scriptableFish, float weight_multiplier = 1, float x_pos = 0, float y_pos = 0)
     {
+        if (scriptableFish == null)
+        {
+            Debug.LogError($"[ClassFish.InitFish] ScriptableFish ist null für {this.gameObject.name}");
+            return;
+        }
+
         this.fishType = scriptableFish.FishTypeCurrent;
-        this.fishName = scriptableFish.FishName;
+        this.fishName = !string.IsNullOrEmpty(scriptableFish.FishName) ? scriptableFish.FishName : this.gameObject.name;
         this.speed = scriptableFish.Speed;
         this.boostedSpeed = scriptableFish.BoostedSpeed;
         this.defaultPrice = scriptableFish.DefaultPrice;
         this.roamRadius = scriptableFish.RoamRadius;
         this.huntRadius = scriptableFish.HuntRadius;
-        this.fishType = scriptableFish.FishTypeCurrent;
 
         this.rectTransform = this.GetComponent<RectTransform>();
-        this.rectTransform.anchoredPosition = new Vector2(x_pos, y_pos);
+        if (this.rectTransform != null)
+        {
+            this.rectTransform.anchoredPosition = new Vector2(x_pos, y_pos);
+        }
+
         this.roamCenter = new Vector2(x_pos, y_pos);
         this.targetRotation = this.transform.rotation;
-        this.fishName = this.gameObject.name;
 
         Debug.Log($"[ClassFish.InitFish] {this.fishName} initialisiert als {this.fishType} an Position ({this.roamCenter.x:F1}, {this.roamCenter.y:F1})");
         this.GenerateNewTarget();
@@ -80,6 +101,11 @@ public class ClassFish : MonoBehaviour
     #region Unity Methods
     private void Start()
     {
+        if (string.IsNullOrEmpty(this.fishName))
+        {
+            this.fishName = this.gameObject.name;
+        }
+
         if (this.rectTransform == null)
         {
             this.rectTransform = this.GetComponent<RectTransform>();
@@ -89,6 +115,15 @@ public class ClassFish : MonoBehaviour
 
     private void Update()
     {
+        if (this.rectTransform == null)
+        {
+            this.rectTransform = this.GetComponent<RectTransform>();
+            if (this.rectTransform == null)
+            {
+                return;
+            }
+        }
+
         this.transform.rotation = Quaternion.Lerp(this.transform.rotation, this.targetRotation, this.rotationSpeed * Time.deltaTime);
 
         this.CheckForBait();
@@ -100,10 +135,7 @@ public class ClassFish : MonoBehaviour
             if (this.huntTimer <= 0f)
             {
                 Debug.Log($"[ClassFish.Update] {this.fishName} gibt Jagd auf Bait auf (Timeout nach {this.huntTimeout}s)");
-                this.isHunting = false;
-                this.targetBait = null;
-                this.GenerateNewTarget();
-                this.currentState = FishState.Moving;
+                this.ResetToRoam();
             }
         }
 
@@ -120,17 +152,106 @@ public class ClassFish : MonoBehaviour
                 break;
         }
     }
+
+    private void OnDestroy()
+    {
+        if (this.targetBait != null && !this.targetBait.IsDestroyed())
+        {
+            this.targetBait.ReleaseClaim(this);
+        }
+    }
+    #endregion
+
+    #region Public Methods
+    public void ReleaseFromHook()
+    {
+        if (this.targetBait != null && !this.targetBait.IsDestroyed())
+        {
+            this.targetBait.ReleaseClaim(this);
+        }
+
+        this.ResetToRoam();
+        Debug.Log($"[ClassFish.ReleaseFromHook] {this.fishName} vom Haken gelöst - zurück zum Roamen");
+    }
+
+    public void CompleteCatch(bool destroyGameObject = true)
+    {
+        if (this.targetBait != null && !this.targetBait.IsDestroyed())
+        {
+            this.targetBait.ReleaseClaim(this);
+        }
+
+        this.hasEaten = false;
+        this.isHunting = false;
+        this.targetBait = null;
+        this.currentState = FishState.Moving;
+
+        Debug.Log($"[ClassFish.CompleteCatch] {this.fishName} ({this.fishType}) wurde gefangen");
+
+        if (destroyGameObject && this.gameObject != null)
+        {
+            Destroy(this.gameObject);
+        }
+        else if (!destroyGameObject)
+        {
+            this.GenerateNewTarget();
+        }
+    }
     #endregion
 
     #region Bait Detection
+    private Vector2 GetBaitPositionInFishSpace(ClassBait bait)
+    {
+        if (bait == null || bait.IsDestroyed())
+        {
+            return this.rectTransform != null ? this.rectTransform.anchoredPosition : Vector2.zero;
+        }
+
+        Vector2 baitWorldPos = bait.GetWorldPosition();
+        if (this.rectTransform != null && this.rectTransform.parent != null)
+        {
+            Vector2 deltaInParent = (Vector2)this.rectTransform.parent.InverseTransformVector(baitWorldPos - (Vector2)this.transform.position);
+            return this.rectTransform.anchoredPosition + deltaInParent;
+        }
+
+        return baitWorldPos;
+    }
+
+    private bool IsBaitAvailable(ClassBait bait)
+    {
+        return bait != null
+            && !bait.IsDestroyed()
+            && bait.gameObject.activeInHierarchy
+            && (!bait.IsOccupied || bait.ClaimedByFish == this);
+    }
+
     private void CheckForBait()
     {
-        // Wenn bereits gegessen, bleibe am Bait kleben
-        if (this.hasEaten && this.targetBait != null && !this.targetBait.IsDestroyed())
+        if (this.rectTransform == null)
         {
-            this.isHunting = true;
-            this.currentState = FishState.Stuck;
             return;
+        }
+
+        // Wenn bereits gegessen, prüfen ob der eigene Claim noch gültig ist
+        if (this.hasEaten)
+        {
+            if (this.IsBaitAvailable(this.targetBait) && this.targetBait.ClaimedByFish == this)
+            {
+                this.isHunting = true;
+                this.currentState = FishState.Stuck;
+                return;
+            }
+
+            Debug.Log($"[ClassFish.CheckForBait] {this.fishName} Bait ist weg oder Claim verloren - zurück zum Roamen");
+            this.ResetToRoam();
+            return;
+        }
+
+        // Wenn das aktuell gejagte Bait zerstört oder bereits von einem anderen Fisch besetzt wurde, sofort aufgeben
+        if (!this.hasEaten && this.targetBait != null && !this.IsBaitAvailable(this.targetBait))
+        {
+            Debug.Log($"[ClassFish.CheckForBait] {this.fishName} gibt aktuelles Ziel auf - Bait zerstört oder bereits besetzt");
+            this.ResetToRoam();
         }
 
         ClassBait[] allBaits = UnityEngine.Object.FindObjectsByType<ClassBait>();
@@ -141,9 +262,12 @@ public class ClassFish : MonoBehaviour
 
         foreach (ClassBait bait in allBaits)
         {
-            if (bait == null || bait.IsDestroyed()) continue;
+            if (!this.IsBaitAvailable(bait))
+            {
+                continue;
+            }
 
-            float distance = Vector2.Distance(fishPos, bait.GetPosition());
+            float distance = Vector2.Distance(fishPos, this.GetBaitPositionInFishSpace(bait));
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -161,7 +285,7 @@ public class ClassFish : MonoBehaviour
         }
         else if (closestBait != null && this.isHunting && closestBait != this.targetBait)
         {
-            // Anderer Bait n�her - Ziel wechseln
+            // Anderer Bait näher - Ziel wechseln
             Debug.Log($"[ClassFish.CheckForBait] {this.fishName} wechselt Jagdziel zu {closestBait.gameObject.name} (Distanz: {closestDistance:F1})");
             this.targetBait = closestBait;
             this.huntTimer = this.huntTimeout;
@@ -172,21 +296,8 @@ public class ClassFish : MonoBehaviour
             {
                 // Kein Bait mehr in Reichweite
                 Debug.Log($"[ClassFish.CheckForBait] {this.fishName} kein Bait mehr in Reichweite - Jagd aufgegeben");
-                this.isHunting = false;
-                this.targetBait = null;
-                this.GenerateNewTarget();
-                this.currentState = FishState.Moving;
+                this.ResetToRoam();
             }
-        }
-        else if (this.hasEaten && (this.targetBait == null || this.targetBait.IsDestroyed()))
-        {
-            // Bait despawned, aber wir haben gegessen - zur�ck zum Roamen
-            Debug.Log($"[ClassFish.CheckForBait] {this.fishName} Bait ist weg - zur�ck zum Roamen");
-            this.hasEaten = false;
-            this.isHunting = false;
-            this.targetBait = null;
-            this.currentState = FishState.Moving;
-            this.GenerateNewTarget();
         }
     }
     #endregion
@@ -194,20 +305,34 @@ public class ClassFish : MonoBehaviour
     #region Moving and Waiting Logic
     private void UpdateMoving()
     {
-        if (this.isHunting && this.targetBait != null)
+        if (this.rectTransform == null)
         {
-            this.targetPosition = this.targetBait.GetPosition();
+            return;
+        }
+
+        if (this.isHunting)
+        {
+            if (!this.IsBaitAvailable(this.targetBait))
+            {
+                Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} gibt Jagd auf - Bait zerstört oder bereits besetzt");
+                this.ResetToRoam();
+            }
+            else
+            {
+                this.targetPosition = this.GetBaitPositionInFishSpace(this.targetBait);
+            }
         }
 
         Vector2 currentPos = this.rectTransform.anchoredPosition;
-        Vector2 directionToTarget = (this.targetPosition - currentPos).normalized;
-        float distanceToTarget = Vector2.Distance(currentPos, this.targetPosition);
+        Vector2 toTarget = this.targetPosition - currentPos;
+        float distanceToTarget = toTarget.magnitude;
+        Vector2 directionToTarget = distanceToTarget > 0.0001f ? toTarget / distanceToTarget : Vector2.zero;
 
         float currentSpeed = this.isHunting ? this.boostedSpeed : this.speed;
 
         if (distanceToTarget > this.stopDistance)
         {
-            Vector2 newPos = currentPos + directionToTarget * currentSpeed * Time.deltaTime;
+            Vector2 newPos = Vector2.MoveTowards(currentPos, this.targetPosition, currentSpeed * Time.deltaTime);
             this.rectTransform.anchoredPosition = newPos;
             this.UpdateSpriteDirection(directionToTarget);
         }
@@ -215,10 +340,21 @@ public class ClassFish : MonoBehaviour
         {
             if (this.isHunting && this.targetBait != null)
             {
-                // Fisch hat das Bait erreicht - stuck machen
-                Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} hat Bait erreicht und bleibt kleben");
-                this.hasEaten = true;
-                this.currentState = FishState.Stuck;
+                if (this.targetBait.TryClaim(this))
+                {
+                    // Fisch hat das Bait als Erster erreicht und geclaimed
+                    Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} hat Bait geclaimed und hängt am Haken");
+                    this.hasEaten = true;
+                    this.currentState = FishState.Stuck;
+                    Vector2 baitWorldPos = this.targetBait.GetWorldPosition();
+                    this.transform.position = new Vector3(baitWorldPos.x, baitWorldPos.y, this.transform.position.z);
+                }
+                else
+                {
+                    // Ein anderer Fisch war schneller
+                    Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} konnte Bait nicht claimen - ein anderer Fisch war schneller");
+                    this.ResetToRoam();
+                }
             }
             else if (!this.isHunting)
             {
@@ -250,20 +386,26 @@ public class ClassFish : MonoBehaviour
     private void UpdateStuck()
     {
         // Fisch bleibt am Bait-Ort stecken
-        if (this.targetBait != null && !this.targetBait.IsDestroyed())
+        if (this.IsBaitAvailable(this.targetBait))
         {
-            Vector2 baitPos = this.targetBait.GetPosition();
-            this.rectTransform.anchoredPosition = baitPos;
+            Vector2 baitWorldPos = this.targetBait.GetWorldPosition();
+            this.transform.position = new Vector3(baitWorldPos.x, baitWorldPos.y, this.transform.position.z);
         }
         else
         {
-            // Bait despawned - zur�ck zum Roamen
-            Debug.Log($"[ClassFish.UpdateStuck] {this.fishName} Bait despawned - zur�ck zum Roamen");
-            this.hasEaten = false;
-            this.isHunting = false;
-            this.GenerateNewTarget();
-            this.currentState = FishState.Moving;
+            // Bait despawned oder Claim verloren - zurück zum Roamen
+            Debug.Log($"[ClassFish.UpdateStuck] {this.fishName} Bait despawned oder ungültig - zurück zum Roamen");
+            this.ResetToRoam();
         }
+    }
+
+    private void ResetToRoam()
+    {
+        this.hasEaten = false;
+        this.isHunting = false;
+        this.targetBait = null;
+        this.GenerateNewTarget();
+        this.currentState = FishState.Moving;
     }
 
     private void GenerateNewTarget()
@@ -280,6 +422,11 @@ public class ClassFish : MonoBehaviour
 
     private void UpdateSpriteDirection(Vector2 direction)
     {
+        if (direction.sqrMagnitude < 0.0001f)
+        {
+            return;
+        }
+
         bool shouldFlip = direction.x < 0f;
 
         if (shouldFlip != this.isFlipped)
