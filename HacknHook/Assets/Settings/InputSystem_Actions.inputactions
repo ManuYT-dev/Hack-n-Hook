@@ -563,26 +563,6 @@
                     "priority": 0
                 },
                 {
-                    "name": "Strike",
-                    "type": "Button",
-                    "id": "27ec973e-cf5a-42fa-b7a6-6d728134477c",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
-                    "name": "Slack",
-                    "type": "Button",
-                    "id": "4a4a3681-fce9-4130-abd4-fffd82ed8268",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
                     "name": "CancelCast",
                     "type": "Button",
                     "id": "71451d19-8471-4675-8321-571afd545866",
@@ -600,6 +580,26 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "ToggleReady",
+                    "type": "Button",
+                    "id": "a19fe797-f27a-4c99-9257-ba3ba6fbeba2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "CastSpeed",
+                    "type": "Value",
+                    "id": "7597d035-b9b2-4953-9863-40959c5c3b0f",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true,
                     "priority": 0
                 }
             ],
@@ -667,50 +667,6 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Aim",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1370763e-53ec-4ebc-9dcd-dcfbbe3e5704",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Strike",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "8c2da59b-2847-4bad-94cf-5292f7cd6014",
-                    "path": "<Gamepad>/buttonWest",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Strike",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "47ebd01e-3b8a-4072-8d5c-895ed8dbba63",
-                    "path": "<Keyboard>/leftShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Slack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "c48ee6e4-268d-4aca-8257-546354f93a41",
-                    "path": "<Gamepad>/leftTrigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Slack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -793,28 +749,6 @@
                 },
                 {
                     "name": "",
-                    "id": "6403d545-adcb-4187-81ea-f12d64ad9f2f",
-                    "path": "<BleControllerDevice>/strike",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "BleController",
-                    "action": "Strike",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "4f66ee2a-451d-4b93-9f5d-87fe10be7d8e",
-                    "path": "<BleControllerDevice>/slack",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "BleController",
-                    "action": "Slack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "60a88fbf-ff43-43fe-8696-b8a806893295",
                     "path": "<BleControllerDevice>/cancelCast",
                     "interactions": "",
@@ -832,6 +766,50 @@
                     "processors": "",
                     "groups": "BleController",
                     "action": "SwitchBait",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "120cb091-bee7-47ac-9799-5ad6008bab80",
+                    "path": "<Keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleReady",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7878fdb2-265d-4d65-9f84-534c57dfd229",
+                    "path": "<BleControllerDevice>/toggleReady",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "BleController",
+                    "action": "ToggleReady",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e6b51779-4da1-4745-a6ee-0dffb86fb354",
+                    "path": "<Mouse>/delta/x",
+                    "interactions": "",
+                    "processors": "scale(factor=0.02)",
+                    "groups": "Keyboard&Mouse",
+                    "action": "CastSpeed",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7831075b-8819-4181-a294-6949df1d9ab7",
+                    "path": "<BleControllerDevice>/castSpeed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "BleController",
+                    "action": "CastSpeed",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
