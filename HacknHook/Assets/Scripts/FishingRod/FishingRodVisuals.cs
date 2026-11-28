@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum HookVisualState
 {
@@ -47,7 +48,7 @@ public class FishingRodVisuals
     #endregion
 
     #region Public Funcs
-    public void Initialize(Transform owner, ScriptableString stringData)
+    public void Initialize(Transform owner, ScriptableFishingLine stringData)
     {
         if (this.hookEmptySprite == null)
         {
@@ -56,7 +57,7 @@ public class FishingRodVisuals
 
         if (stringData != null)
         {
-            this.stringColor = stringData.ColorString;
+            this.stringColor = Color.white;
         }
 
         this.EnsureHookHierarchy(owner);

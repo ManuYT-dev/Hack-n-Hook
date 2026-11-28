@@ -20,7 +20,7 @@ public class ClassFishingRod : MonoBehaviour
     [SerializeField] private FishingHookPhysics physics = new FishingHookPhysics();
 
     [Header("Equipment Defaults")]
-    [SerializeField] private ScriptableString equippedStringData;
+    [SerializeField] private ScriptableFishingLine equippedStringData;
     [SerializeField] private float defaultMaxDepth = 500f;
     [SerializeField] private ScriptableBait equippedBaitData;
     [SerializeField] private string defaultBaitName = "DefaultBait";
@@ -51,9 +51,9 @@ public class ClassFishingRod : MonoBehaviour
     public Transform HookTipTransform => this.visuals.HookTipTransform;
     public FishingRodVisuals Visuals => this.visuals;
     public FishingHookPhysics Physics => this.physics;
-    public ScriptableString EquippedStringData => this.equippedStringData;
+    public ScriptableFishingLine EquippedStringData => this.equippedStringData;
     public ScriptableBait EquippedBaitData => this.equippedBaitData;
-    public float AllowedMaxDepth => this.equippedStringData != null ? Mathf.Max(0f, this.equippedStringData.MaxDepth) : Mathf.Max(0f, this.defaultMaxDepth);
+    public float AllowedMaxDepth => this.equippedStringData != null ? Mathf.Max(0f, this.equippedStringData.Deapth) : Mathf.Max(0f, this.defaultMaxDepth);
     public float CurrentBaitFallSpeed => this.activeBait != null ? Mathf.Max(0f, this.activeBait.FallSpeed) : (this.equippedBaitData != null ? Mathf.Max(0f, this.equippedBaitData.FallSpeed) : Mathf.Max(0f, this.defaultBaitFallSpeed));
     public float LastPeakCastSpeed => this.physics.LastPeakCastSpeed;
     public float LastSpeedMultiplier => this.physics.LastSpeedMultiplier;
@@ -62,6 +62,16 @@ public class ClassFishingRod : MonoBehaviour
     #region Unity Funcs
     private void Awake()
     {
+        if (hookCameraSwitcher == null)
+        {
+            hookCameraSwitcher = GetComponent<HookCameraSwitcher>();
+        }
+
+        if (hookCameraSwitcher == null)
+        {
+            Debug.LogError("HookCameraSwitcher fehlt auf diesem GameObject.", this);
+        }
+
         if (this.rodOrigin == null)
         {
             this.rodOrigin = this.transform;
@@ -236,12 +246,12 @@ public class ClassFishingRod : MonoBehaviour
     public void SetStringColor(Color color) => this.visuals.SetStringColor(color);
     public void ApplyStringColor(FishingLineType stringType) => this.visuals.ApplyStringColor(stringType);
 
-    public void SetEquippedString(ScriptableString stringData)
+    public void SetEquippedString(ScriptableFishingLine stringData)
     {
         this.equippedStringData = stringData;
         if (stringData != null)
         {
-            this.visuals.SetStringColor(stringData.ColorString);
+            this.visuals.SetStringColor(Color.white);
         }
     }
 
@@ -355,6 +365,8 @@ public class ClassFishingRod : MonoBehaviour
         }
     }
 
+    [SerializeField] private HookCameraSwitcher hookCameraSwitcher;
+
     private void SpawnAndAttachBait()
     {
         this.CleanupActiveBait();
@@ -383,6 +395,13 @@ public class ClassFishingRod : MonoBehaviour
         bait.OnFishClaimed += this.HandleFishClaimed;
         this.activeBait = bait;
         this.visuals.SetHookSprite(HookVisualState.Baited);
+        this.activeBait = bait;
+        this.visuals.SetHookSprite(HookVisualState.Baited);
+
+        if (this.hookCameraSwitcher != null)
+        {
+            this.hookCameraSwitcher.HookWasThrown(baitObject.transform);
+        }
     }
 
     private void HandleFishClaimed(ClassFish fish)
