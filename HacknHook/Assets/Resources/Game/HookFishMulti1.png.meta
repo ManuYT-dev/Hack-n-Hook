@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 18eaeecaf78417e48ab1d63244c3004d
+guid: 1daf1aba5bd406a4db6d724c7e484bdb
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7651120747085999401
-    second: Haffen - Kopie_0
+      213: 1872651417070966282
+    second: HookFishMulti1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -115,13 +115,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Haffen - Kopie_0
+      name: HookFishMulti1_0
       rect:
         serializedVersion: 2
-        x: 16
-        y: 34
-        width: 252
-        height: 101
+        x: 6
+        y: 13
+        width: 40
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -130,8 +130,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 92daea738cd3e2a60800000000000000
-      internalID: 7651120747085999401
+      spriteID: a0695a6ca8efcf910800000000000000
+      internalID: 1872651417070966282
       vertices: []
       indices: 
       edges: []
@@ -140,7 +140,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -150,7 +150,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Haffen - Kopie_0: 7651120747085999401
+      HookFishMulti1_0: 1872651417070966282
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
