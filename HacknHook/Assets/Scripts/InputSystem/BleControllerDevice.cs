@@ -6,7 +6,7 @@ using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.Utilities;
 
-[StructLayout(LayoutKind.Explicit, Size = 20)]
+[StructLayout(LayoutKind.Explicit, Size = 12)]
 public struct BleControllerState : IInputStateTypeInfo
 {
     #region Format
@@ -15,29 +15,17 @@ public struct BleControllerState : IInputStateTypeInfo
     #endregion
 
     #region State Fields
-    [InputControl(name = "rell", layout = "Button", bit = 0)]
-    [InputControl(name = "throw", layout = "Button", bit = 1)]
-    [InputControl(name = "cancelCast", layout = "Button", bit = 4)]
-    [InputControl(name = "switchBait", layout = "Button", bit = 5)]
-    [InputControl(name = "anchor", layout = "Button", bit = 6)]
-    [InputControl(name = "interact", layout = "Button", bit = 7)]
-    [InputControl(name = "toggleFishing", layout = "Button", bit = 8)]
-    [InputControl(name = "boost", layout = "Button", bit = 9)]
-    [InputControl(name = "pause", layout = "Button", bit = 10)]
-    [InputControl(name = "toggleReady", layout = "Button", bit = 11)]
+    [InputControl(name = "toggleReady", layout = "Button", bit = 0)]
+    [InputControl(name = "buttonPressed", layout = "Button", bit = 1)]
     [FieldOffset(0)]
     public uint buttons;
 
-    [InputControl(name = "aim", layout = "Vector2")]
+    [InputControl(name = "rell", layout = "Axis")]
     [FieldOffset(4)]
-    public Vector2 aim;
-
-    [InputControl(name = "drive", layout = "Axis")]
-    [FieldOffset(12)]
-    public float drive;
+    public float rell;
 
     [InputControl(name = "castSpeed", layout = "Axis")]
-    [FieldOffset(16)]
+    [FieldOffset(8)]
     public float castSpeed;
     #endregion
 }
@@ -51,19 +39,10 @@ public class BleControllerDevice : InputDevice
     #region Properties
     public static BleControllerDevice current { get; private set; }
 
-    public ButtonControl rell { get; private set; }
-    public ButtonControl throwButton { get; private set; }
-    public Vector2Control aim { get; private set; }
-    public ButtonControl cancelCast { get; private set; }
-    public ButtonControl switchBait { get; private set; }
-    public AxisControl drive { get; private set; }
-    public ButtonControl anchor { get; private set; }
-    public ButtonControl interact { get; private set; }
-    public ButtonControl toggleFishing { get; private set; }
-    public ButtonControl boost { get; private set; }
-    public ButtonControl pause { get; private set; }
+    public AxisControl rell { get; private set; }
     public ButtonControl toggleReady { get; private set; }
     public AxisControl castSpeed { get; private set; }
+    public ButtonControl buttonPressed { get; private set; }
     #endregion
 
     #region Private Variables
@@ -87,19 +66,10 @@ public class BleControllerDevice : InputDevice
     protected override void FinishSetup()
     {
         base.FinishSetup();
-        this.rell = this.GetChildControl<ButtonControl>("rell");
-        this.throwButton = this.GetChildControl<ButtonControl>("throw");
-        this.aim = this.GetChildControl<Vector2Control>("aim");
-        this.cancelCast = this.GetChildControl<ButtonControl>("cancelCast");
-        this.switchBait = this.GetChildControl<ButtonControl>("switchBait");
-        this.drive = this.GetChildControl<AxisControl>("drive");
-        this.anchor = this.GetChildControl<ButtonControl>("anchor");
-        this.interact = this.GetChildControl<ButtonControl>("interact");
-        this.toggleFishing = this.GetChildControl<ButtonControl>("toggleFishing");
-        this.boost = this.GetChildControl<ButtonControl>("boost");
-        this.pause = this.GetChildControl<ButtonControl>("pause");
+        this.rell = this.GetChildControl<AxisControl>("rell");
         this.toggleReady = this.GetChildControl<ButtonControl>("toggleReady");
         this.castSpeed = this.GetChildControl<AxisControl>("castSpeed");
+        this.buttonPressed = this.GetChildControl<ButtonControl>("buttonPressed");
     }
 
     protected override void OnAdded() => current = this;
@@ -110,60 +80,45 @@ public class BleControllerDevice : InputDevice
     }
     #endregion
 
+    #region Constants
+    private const int ModusRell = 0;      // 0b00
+    private const int ModusCastSpeed = 1; // 0b01
+    private const int ModusCancel = 3;    // 0b11
+
+    public static float ReadyCastSpeedMinimum { get; set; } = 0.25f;
+    public static float CastSpeedScale { get; set; } = 2.0f;
+    #endregion
+
     #region Public Funcs
     public void ApplyPacket(byte[] buf, int size)
     {
         if (buf == null || size < 1) return;
 
         byte header = buf[0];
-        int type = header & 0b11;
-        int map = (header >> 2) & 0b11;
-        int action = (header >> 4) & 0xF;
+        bool active = (header & 0b1) != 0;
+        int modus = (header >> 1) & 0b11;
 
-        if (type <= 1)
+        switch (modus)
         {
-            int bit = GetButtonBit(map, action);
-            if (bit < 0)
-            {
-                Debug.LogWarning($"[BLE] Unknown button packet: map={map}, action={action}");
-                return;
-            }
+            case ModusRell:
+                if (!this.TryReadAxisInt16(buf, size, active, normalized: false, out float rellValue)) return;
+                this._state.rell = rellValue;
+                break;
 
-            uint mask = 1u << bit;
-            if (type == 1) this._state.buttons |= mask;
-            else this._state.buttons &= ~mask;
-        }
-        else if (type == 2)
-        {
-            if (size < 3)
-            {
-                Debug.LogWarning($"[BLE] Invalid 1D packet: size={size}, map={map}, action={action}");
-                return;
-            }
+            case ModusCastSpeed:
+                if (!this.TryReadAxisInt16(buf, size, active, normalized: true, out float rawCastSpeed)) return;
+                float castSpeedValue = Mathf.Clamp(rawCastSpeed * CastSpeedScale, -1f, 1f);
+                this._state.castSpeed = castSpeedValue;
+                this.SetButtonBit(0, castSpeedValue >= ReadyCastSpeedMinimum);
+                break;
 
-            if (map == 2 && action == 0)
-            {
-                this._state.drive = ReadNormalizedInt16(buf, 1);
-            }
-            else if (map == 1 && action == 8)
-            {
-                this._state.castSpeed = ReadNormalizedInt16(buf, 1);
-            }
-            else
-            {
-                Debug.LogWarning($"[BLE] Invalid 1D packet: size={size}, map={map}, action={action}");
-                return;
-            }
-        }
-        else
-        {
-            if (size < 5 || map != 1 || action != 2)
-            {
-                Debug.LogWarning($"[BLE] Invalid 2D packet: size={size}, map={map}, action={action}");
-                return;
-            }
+            case ModusCancel:
+                this.SetButtonBit(1, active);
+                break;
 
-            this._state.aim = new Vector2(ReadNormalizedInt16(buf, 1), ReadNormalizedInt16(buf, 3));
+            default:
+                Debug.LogWarning($"[BLE] Unsupported modus: modus={modus}, header=0x{header:X2}");
+                return;
         }
 
         InputSystem.QueueStateEvent(this, this._state);
@@ -171,25 +126,31 @@ public class BleControllerDevice : InputDevice
     #endregion
 
     #region Private Funcs
-    private static float ReadNormalizedInt16(byte[] buf, int offset)
+    private void SetButtonBit(int bit, bool active)
     {
-        short raw = (short)(buf[offset] | (buf[offset + 1] << 8));
-        return Mathf.Clamp(raw / 32767f, -1f, 1f);
+        uint mask = 1u << bit;
+        if (active) this._state.buttons |= mask;
+        else this._state.buttons &= ~mask;
     }
 
-    private static int GetButtonBit(int map, int action) => (map, action) switch
+    private bool TryReadAxisInt16(byte[] buf, int size, bool active, bool normalized, out float value)
     {
-        (1, 0) => 0,  // FishingRod: Rell
-        (1, 1) => 1,  // FishingRod: Throw
-        (1, 5) => 4,  // FishingRod: CancelCast
-        (1, 6) => 5,  // FishingRod: SwitchBait
-        (1, 7) => 11, // FishingRod: ToggleReady
-        (2, 1) => 6,  // Boat: Anchor
-        (2, 2) => 7,  // Boat: Interact
-        (2, 3) => 8,  // Boat: ToggleFishing
-        (2, 4) => 9,  // Boat: Boost
-        (3, 0) => 10, // Global: Pause
-        _ => -1
-    };
+        if (!active)
+        {
+            value = 0f;
+            return true;
+        }
+
+        if (size < 3)
+        {
+            Debug.LogWarning($"[BLE] Invalid int16 packet size: size={size}, header=0x{buf[0]:X2}");
+            value = 0f;
+            return false;
+        }
+
+        short raw = (short)(buf[1] | (buf[2] << 8));
+        value = normalized ? Mathf.Clamp(raw / 32767f, -1f, 1f) : Mathf.Clamp(raw, -1f, 1f);
+        return true;
+    }
     #endregion
 }

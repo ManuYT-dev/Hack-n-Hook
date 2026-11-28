@@ -221,7 +221,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
     #region Ready Mode & Lifecycle Tests
     private void RunReadyModeAndLifecycleTests(Mouse mouse, Keyboard keyboard, BleControllerDevice ble)
     {
-        // 1. ToggleReady via Key.X and BLE (1,7) toggles Idle <-> Ready and fires events
+        // 1. ToggleReady via Key.X toggles Idle <-> Ready; BLE (1,7) sets Ready on true and Idle on false (unless already cast)
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("ToggleReadyRod", new Vector3(5f, 10f, 0f));
@@ -233,35 +233,54 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             Transform hookTransform = rod.Visuals.HookTransform;
             LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
-            // Key.X press -> Ready
+            // Key.X press -> Ready, second Key.X press -> Idle
             SendKeyboard(keyboard, new KeyboardState(Key.X));
             InputSystem.Update();
             SendKeyboard(keyboard, new KeyboardState());
             InputSystem.Update();
 
-            bool enteredReady =
+            bool enteredReadyKey =
                 rod.CurrentState == RodState.Ready &&
                 rod.IsReady &&
                 hookTransform.gameObject.activeSelf &&
                 lineRenderer.enabled &&
                 readyEvents.Count == 1 && readyEvents[0];
 
-            // BLE ToggleReady (map=1, action=7) -> Idle
-            ble.ApplyPacket(MakeButtonPacket(true, 1, 7), 1);
+            SendKeyboard(keyboard, new KeyboardState(Key.X));
             InputSystem.Update();
-            ble.ApplyPacket(MakeButtonPacket(false, 1, 7), 1);
+            SendKeyboard(keyboard, new KeyboardState());
             InputSystem.Update();
 
-            bool exitedReady =
+            bool exitedReadyKey =
                 rod.CurrentState == RodState.Idle &&
                 !rod.IsReady &&
                 !hookTransform.gameObject.activeSelf &&
                 !lineRenderer.enabled &&
-                readyEvents.Count == 2 && !readyEvents[1] &&
-                stateEvents.Count == 2 && stateEvents[0] == RodState.Ready && stateEvents[1] == RodState.Idle;
+                readyEvents.Count == 2 && !readyEvents[1];
 
-            this.Record("ToggleReady works from Key.X and BLE (1,7) with events", enteredReady && exitedReady,
-                $"enteredReady={enteredReady}, exitedReady={exitedReady}, stateEvents={stateEvents.Count}");
+            // BLE negative & below-minimum CastSpeed keep rod Idle; positive CastSpeed >= min auto-readies, casts, and 0 keeps Cast
+            ble.ApplyPacket(MakeInt16Packet(true, 1, -4000), 3);
+            InputSystem.Update();
+            bool stayedIdleNeg = rod.CurrentState == RodState.Idle;
+
+            ble.ApplyPacket(MakeInt16Packet(true, 1, 1000), 3);
+            InputSystem.Update();
+            bool stayedIdleBelowMin = rod.CurrentState == RodState.Idle;
+
+            ble.ApplyPacket(MakeInt16Packet(true, 1, 6000), 3);
+            InputSystem.Update();
+            bool enteredReadyBle = rod.CurrentState == RodState.Ready && readyEvents.Count == 3 && readyEvents[2];
+
+            rod.StepRod(0.05f);
+            bool enteredSamplingBle = rod.CurrentState == RodState.SamplingCast;
+            rod.StepRod(0.16f);
+            ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3);
+            InputSystem.Update();
+            bool keptCastOnBleRelease = rod.CurrentState == RodState.Cast;
+
+            this.Record("ToggleReady works from Key.X (toggle) and BLE CastSpeed (>= min positive)",
+                enteredReadyKey && exitedReadyKey && stayedIdleNeg && stayedIdleBelowMin && enteredReadyBle && enteredSamplingBle && keptCastOnBleRelease,
+                $"key={enteredReadyKey && exitedReadyKey}, ble={stayedIdleNeg && stayedIdleBelowMin && enteredReadyBle && enteredSamplingBle}, castKept={keptCastOnBleRelease}, states={stateEvents.Count}");
         });
 
         // 2. Cannot operate in Shop or when boat is not in Fishing mode; exiting Fishing resets to Idle
@@ -374,16 +393,16 @@ public class ClassFishingRodUnitTests : MonoBehaviour
                 Mathf.Approximately(rod.LastPeakCastSpeed, 2.0f) &&
                 Mathf.Approximately(fastMult, 1.5f);
 
-            // Second cast via BLE (1,8) right at minThrowSpeed (Int16 quantization 8192/32767 ~= 0.2500076 -> ~0.5x)
+            // Second cast via BLE CastSpeed (modus=1) right at minThrowSpeed (scaled 0.25 -> 0.5x)
             rod.CancelAndResetToIdle();
             rod.ToggleReady();
 
-            short slowRaw = (short)Mathf.RoundToInt(0.25f * 32767f);
-            ble.ApplyPacket(Make1DPacket(1, 8, slowRaw), 3);
+            short slowRaw = (short)Mathf.RoundToInt((0.25f / BleControllerDevice.CastSpeedScale) * 32767f);
+            ble.ApplyPacket(MakeInt16Packet(true, 1, slowRaw), 3);
             InputSystem.Update();
             rod.StepRod(0.05f);
             rod.StepRod(0.16f);
-            ble.ApplyPacket(Make1DPacket(1, 8, 0), 3);
+            ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3);
             InputSystem.Update();
 
             float slowMult = rod.LastSpeedMultiplier;
@@ -599,11 +618,11 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             rod.StepRod(0.016f);
             bool returnedToHookedOnRelease = rod.CurrentState == RodState.Hooked;
 
-            // Reel via BLE Rell (map=1, action=0) the remaining distance into reelCompleteDistance
-            ble.ApplyPacket(MakeButtonPacket(true, 1, 0), 1);
+            // Reel via BLE Rell handcrank (modus=0, -1 direction) into reelCompleteDistance
+            ble.ApplyPacket(MakeInt16Packet(true, 0, -1), 3);
             InputSystem.Update();
-            rod.StepRod(1.0f);
-            ble.ApplyPacket(MakeButtonPacket(false, 1, 0), 1);
+            rod.StepRod(1.1f);
+            ble.ApplyPacket(MakeInt16Packet(false, 0, 0), 3);
             InputSystem.Update();
 
             bool completedOk =
@@ -680,14 +699,24 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             SendKeyboard(keyboard, new KeyboardState());
             InputSystem.Update();
 
-            bool ok =
+            bool keyCancelOk =
                 rod.CurrentState == RodState.Idle &&
                 rod.HookedFish == null &&
                 rod.ActiveBait == null &&
                 !fish.IsHooked;
 
-            this.Record("CancelCast (Key.C) releases hooked fish and resets rod to Idle", ok,
-                $"state={rod.CurrentState}, fishHooked={fish.IsHooked}");
+            // BLE buttonPressed (id=3) also cancels Cast back to Idle
+            rod.ExecuteCast(0.5f);
+            ble.ApplyPacket(MakeButtonPacket(true, 3), 1);
+            InputSystem.Update();
+            ble.ApplyPacket(MakeButtonPacket(false, 3), 1);
+            InputSystem.Update();
+
+            bool bleCancelOk = rod.CurrentState == RodState.Idle;
+
+            this.Record("CancelCast (Key.C & BLE buttonPressed) releases hooked fish and resets rod to Idle",
+                keyCancelOk && bleCancelOk,
+                $"keyCancel={keyCancelOk}, bleCancel={bleCancelOk}, fishHooked={fish.IsHooked}");
         });
     }
     #endregion
@@ -903,13 +932,13 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             && Mathf.Abs(a.a - b.a) < 0.01f;
     }
 
-    private static byte[] MakeButtonPacket(bool pressed, byte map, byte action) =>
-        new[] { (byte)((pressed ? 1 : 0) | ((map & 0b11) << 2) | ((action & 0xF) << 4)) };
+    private static byte[] MakeButtonPacket(bool active, byte modus) =>
+        new[] { (byte)((active ? 1 : 0) | ((modus & 0b11) << 1)) };
 
-    private static byte[] Make1DPacket(byte map, byte action, short value) =>
+    private static byte[] MakeInt16Packet(bool active, byte modus, short value) =>
         new[]
         {
-            (byte)(0b10 | ((map & 0b11) << 2) | ((action & 0xF) << 4)),
+            (byte)((active ? 1 : 0) | ((modus & 0b11) << 1)),
             (byte)(value & 0xFF),
             (byte)((value >> 8) & 0xFF)
         };
@@ -930,12 +959,11 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         }
         if (ble != null)
         {
-            foreach (byte actionId in new byte[] { 0, 1, 5, 6, 7 })
-            {
-                ble.ApplyPacket(MakeButtonPacket(false, 1, actionId), 1);
-            }
-            ble.ApplyPacket(Make1DPacket(1, 8, 0), 3);
+            ble.ApplyPacket(MakeInt16Packet(false, 0, 0), 3);
+            ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3);
+            ble.ApplyPacket(MakeButtonPacket(false, 3), 1);
         }
+        Controlls.fishingRodActions.Rell.Reset();
         Controlls.fishingRodActions.Aim.Reset();
         Controlls.fishingRodActions.CastSpeed.Reset();
         InputSystem.Update();

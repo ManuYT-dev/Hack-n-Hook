@@ -620,12 +620,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             ""actions"": [
                 {
                     ""name"": ""Rell"",
-                    ""type"": ""Button"",
+                    ""type"": ""Value"",
                     ""id"": ""2e9335fd-5f07-45ce-9cda-1a59b1cf28cc"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Axis"",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false,
+                    ""initialStateCheck"": true,
                     ""priority"": 0
                 },
                 {
@@ -813,45 +813,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""7bcefbc9-79b5-46c7-9ca5-ba48ae2e6ec6"",
-                    ""path"": ""<BleControllerDevice>/throw"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Throw"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""e700aaf7-b880-4fb9-84e6-110cc595510e"",
-                    ""path"": ""<BleControllerDevice>/aim"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Aim"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""60a88fbf-ff43-43fe-8696-b8a806893295"",
-                    ""path"": ""<BleControllerDevice>/cancelCast"",
+                    ""path"": ""<BleControllerDevice>/buttonPressed"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""BleController"",
                     ""action"": ""CancelCast"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""777e80f3-96c2-46f2-847e-f8395315bc40"",
-                    ""path"": ""<BleControllerDevice>/switchBait"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""SwitchBait"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1143,61 +1110,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""action"": ""Boost"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""19fcf2c5-064b-4538-a05f-ced45ab4c3b7"",
-                    ""path"": ""<BleControllerDevice>/drive"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Drive"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""84987347-a9ee-4ad4-92ae-20b2ed46f5b1"",
-                    ""path"": ""<BleControllerDevice>/anchor"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Anchor"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""888f435b-feca-4328-9c71-8b86541c1000"",
-                    ""path"": ""<BleControllerDevice>/interact"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Interact"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""0f87c683-3e8e-4a0b-8c0a-acb5df90b668"",
-                    ""path"": ""<BleControllerDevice>/toggleFishing"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""ToggleFishing"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""e8aa7a35-15be-49e0-8452-62e2413e3fca"",
-                    ""path"": ""<BleControllerDevice>/boost"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Boost"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -1235,17 +1147,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
-                    ""action"": ""Pause"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""39f03253-f808-47a2-913e-7237c7dd61dd"",
-                    ""path"": ""<BleControllerDevice>/pause"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false

@@ -90,6 +90,7 @@ public class InputUnitTests : MonoBehaviour
             );
             Controlls.inputActions.Enable();
             InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Rell.Reset();
             Controlls.fishingRodActions.Aim.Reset();
             Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
@@ -97,6 +98,7 @@ public class InputUnitTests : MonoBehaviour
             this.RunKeyboardAndMouseTests(vMouse, vKeyboard);
             ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
             InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Rell.Reset();
             Controlls.fishingRodActions.Aim.Reset();
             Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
@@ -250,6 +252,7 @@ public class InputUnitTests : MonoBehaviour
             Controlls.inputActions.Disable();
             Controlls.inputActions.devices = new ReadOnlyArray<InputDevice>(new InputDevice[] { ble });
             Controlls.inputActions.Enable();
+            Controlls.fishingRodActions.Rell.Reset();
             Controlls.fishingRodActions.Aim.Reset();
             Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
@@ -269,35 +272,22 @@ public class InputUnitTests : MonoBehaviour
     private void RunBleTests(BleControllerDevice ble)
     {
         var rod = Controlls.fishingRodActions;
-        var boat = Controlls.boatActions;
-        var global = Controlls.globalActions;
 
-        this.TestBleButton("BLE FishingRod.Rell", rod.Rell, ble, 1, 0, d => d.rell);
-        this.TestBleButton("BLE FishingRod.Throw", rod.Throw, ble, 1, 1, d => d.throwButton);
-        this.TestBleAim(ble, rod.Aim);
-        this.TestBleButton("BLE FishingRod.CancelCast", rod.CancelCast, ble, 1, 5, d => d.cancelCast);
-        this.TestBleButton("BLE FishingRod.SwitchBait", rod.SwitchBait, ble, 1, 6, d => d.switchBait);
-        this.TestBleButton("BLE FishingRod.ToggleReady", rod.ToggleReady, ble, 1, 7, d => d.toggleReady);
+        this.TestBleRell(ble, rod.Rell);
         this.TestBleCastSpeed(ble, rod.CastSpeed);
-
-        this.TestBleDrive(ble, boat.Drive);
-        this.TestBleButton("BLE Boat.Anchor", boat.Anchor, ble, 2, 1, d => d.anchor);
-        this.TestBleButton("BLE Boat.Interact", boat.Interact, ble, 2, 2, d => d.interact);
-        this.TestBleButton("BLE Boat.ToggleFishing", boat.ToggleFishing, ble, 2, 3, d => d.toggleFishing);
-        this.TestBleButton("BLE Boat.Boost", boat.Boost, ble, 2, 4, d => d.boost);
-
-        this.TestBleButton("BLE Global.Pause", global.Pause, ble, 3, 0, d => d.pause);
+        this.TestBleAutoToggleReady(ble, rod.ToggleReady);
+        this.TestBleButton("BLE FishingRod.CancelCast (buttonPressed)", rod.CancelCast, ble, 3, d => d.buttonPressed);
     }
 
-    private void TestBleButton(string label, InputAction action, BleControllerDevice ble, byte map, byte actionId, Func<BleControllerDevice, ButtonControl> control)
+    private void TestBleButton(string label, InputAction action, BleControllerDevice ble, byte modus, Func<BleControllerDevice, ButtonControl> control)
     {
         using var probe = new ActionProbe(action);
 
-        ble.ApplyPacket(MakeButtonPacket(true, map, actionId), 1);
+        ble.ApplyPacket(MakeButtonPacket(true, modus), 1);
         InputSystem.Update();
         bool pressedOk = probe.Started == 1 && probe.Performed == 1 && control(ble).isPressed;
 
-        ble.ApplyPacket(MakeButtonPacket(false, map, actionId), 1);
+        ble.ApplyPacket(MakeButtonPacket(false, modus), 1);
         InputSystem.Update();
         bool releasedOk = probe.Canceled == 1 && !control(ble).isPressed;
 
@@ -305,81 +295,95 @@ public class InputUnitTests : MonoBehaviour
             $"started={probe.Started}, performed={probe.Performed}, canceled={probe.Canceled}");
     }
 
-    private void TestBleAim(BleControllerDevice ble, InputAction aimAction)
+    private void TestBleAutoToggleReady(BleControllerDevice ble, InputAction toggleReadyAction)
     {
-        short rx = this.RandomNonZeroInt16();
-        short ry = this.RandomNonZeroInt16();
-        Vector2 expected = new(rx / 32767f, ry / 32767f);
+        using var probe = new ActionProbe(toggleReadyAction);
 
-        this.TestVector2($"BLE FishingRod.Aim random ({rx}, {ry})", aimAction,
-            () => ble.ApplyPacket(Make2DPacket(1, 2, rx, ry), 5),
-            () => ble.ApplyPacket(Make2DPacket(1, 2, 0, 0), 5),
-            expected, 0.001f);
+        // Negative CastSpeed must not activate ToggleReady
+        ble.ApplyPacket(MakeInt16Packet(true, 1, -4000), 3);
+        InputSystem.Update();
+        bool negativeIgnored = probe.Started == 0 && !ble.toggleReady.isPressed;
 
-        this.TestVector2("BLE FishingRod.Aim min clamp (-32768, -32768)", aimAction,
-            () => ble.ApplyPacket(Make2DPacket(1, 2, short.MinValue, short.MinValue), 5),
-            () => ble.ApplyPacket(Make2DPacket(1, 2, 0, 0), 5),
-            new Vector2(-1f, -1f), 0.001f);
+        // Positive CastSpeed below ReadyCastSpeedMinimum (1000 * 2 / 32767 ~= 0.061 < 0.25) must not activate ToggleReady
+        ble.ApplyPacket(MakeInt16Packet(true, 1, 1000), 3);
+        InputSystem.Update();
+        bool belowMinIgnored = probe.Started == 0 && !ble.toggleReady.isPressed;
+
+        // Legacy modus=2 packet must be ignored
+        bool prevLogEnabled = Debug.unityLogger.logEnabled;
+        try
+        {
+            Debug.unityLogger.logEnabled = false;
+            ble.ApplyPacket(MakeButtonPacket(true, 2), 1);
+        }
+        finally
+        {
+            Debug.unityLogger.logEnabled = prevLogEnabled;
+        }
+        InputSystem.Update();
+        bool modus2Ignored = probe.Started == 0 && !ble.toggleReady.isPressed;
+
+        // Positive CastSpeed >= ReadyCastSpeedMinimum (6000 * 2 / 32767 ~= 0.366 >= 0.25) activates ToggleReady
+        ble.ApplyPacket(MakeInt16Packet(true, 1, 6000), 3);
+        InputSystem.Update();
+        bool positiveActivated = probe.Started == 1 && probe.Performed == 1 && ble.toggleReady.isPressed;
+
+        // Dropping CastSpeed back to 0 clears ToggleReady
+        ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3);
+        InputSystem.Update();
+        bool clearedOnZero = probe.Canceled == 1 && !ble.toggleReady.isPressed;
+
+        this.Record("BLE CastSpeed -> Auto ToggleReady (positive >= min only)",
+            negativeIgnored && belowMinIgnored && modus2Ignored && positiveActivated && clearedOnZero,
+            $"neg={negativeIgnored}, belowMin={belowMinIgnored}, modus2={modus2Ignored}, pos={positiveActivated}, cleared={clearedOnZero}");
     }
 
-    private void TestBleCastSpeed(BleControllerDevice ble, InputAction castSpeedAction) =>
-        this.TestBle1DAxis("BLE FishingRod.CastSpeed", ble, castSpeedAction, 1, 8);
-
-    private void TestBleDrive(BleControllerDevice ble, InputAction driveAction) =>
-        this.TestBle1DAxis("BLE Boat.Drive", ble, driveAction, 2, 0);
-
-    private void TestBle1DAxis(string labelPrefix, BleControllerDevice ble, InputAction axisAction, byte map, byte actionId)
+    private void TestBleRell(BleControllerDevice ble, InputAction rellAction)
     {
-        short r = this.RandomNonZeroInt16();
-        float expected = r / 32767f;
+        this.TestAxis("BLE FishingRod.Rell (+1)", rellAction,
+            () => ble.ApplyPacket(MakeInt16Packet(true, 0, 1), 3),
+            () => ble.ApplyPacket(MakeInt16Packet(false, 0, 0), 3),
+            v => Mathf.Approximately(v, 1f));
 
-        this.TestAxis($"{labelPrefix} random ({r})", axisAction,
-            () => ble.ApplyPacket(Make1DPacket(map, actionId, r), 3),
-            () => ble.ApplyPacket(Make1DPacket(map, actionId, 0), 3),
+        this.TestAxis("BLE FishingRod.Rell (-1) & inactive byte", rellAction,
+            () => ble.ApplyPacket(MakeInt16Packet(true, 0, -1), 3),
+            () => ble.ApplyPacket(MakeButtonPacket(false, 0), 1),
+            v => Mathf.Approximately(v, -1f));
+    }
+
+    private void TestBleCastSpeed(BleControllerDevice ble, InputAction castSpeedAction)
+    {
+        short r = (short)(this.RandomSign() * this._rng.Next(1000, 8000));
+        float expected = Mathf.Clamp((r / 32767f) * BleControllerDevice.CastSpeedScale, -1f, 1f);
+
+        this.TestAxis($"BLE FishingRod.CastSpeed scaled ({r})", castSpeedAction,
+            () => ble.ApplyPacket(MakeInt16Packet(true, 1, r), 3),
+            () => ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3),
             v => Mathf.Abs(v - expected) < 0.001f);
 
-        this.TestAxis($"{labelPrefix} min clamp (-32768)", axisAction,
-            () => ble.ApplyPacket(Make1DPacket(map, actionId, short.MinValue), 3),
-            () => ble.ApplyPacket(Make1DPacket(map, actionId, 0), 3),
+        this.TestAxis("BLE FishingRod.CastSpeed min clamp (-32768) & inactive byte", castSpeedAction,
+            () => ble.ApplyPacket(MakeInt16Packet(true, 1, short.MinValue), 3),
+            () => ble.ApplyPacket(MakeButtonPacket(false, 1), 1),
             v => Mathf.Approximately(v, -1f));
     }
 
     private static void ResetBluetoothDevice(BleControllerDevice ble)
     {
-        for (byte actionId = 0; actionId <= 8; actionId++)
-        {
-            if (actionId == 2) ble.ApplyPacket(Make2DPacket(1, 2, 0, 0), 5);
-            else if (actionId == 8) ble.ApplyPacket(Make1DPacket(1, 8, 0), 3);
-            else if (actionId != 3 && actionId != 4) ble.ApplyPacket(MakeButtonPacket(false, 1, actionId), 1);
-        }
-        ble.ApplyPacket(Make1DPacket(2, 0, 0), 3);
-        for (byte actionId = 1; actionId <= 4; actionId++)
-            ble.ApplyPacket(MakeButtonPacket(false, 2, actionId), 1);
-        ble.ApplyPacket(MakeButtonPacket(false, 3, 0), 1);
+        ble.ApplyPacket(MakeInt16Packet(false, 0, 0), 3);
+        ble.ApplyPacket(MakeInt16Packet(false, 1, 0), 3);
+        ble.ApplyPacket(MakeButtonPacket(false, 3), 1);
         InputSystem.Update();
     }
 
-    private short RandomNonZeroInt16() => (short)(this.RandomSign() * this._rng.Next(2000, 32768));
+    private static byte[] MakeButtonPacket(bool active, byte modus) =>
+        new[] { (byte)((active ? 1 : 0) | ((modus & 0b11) << 1)) };
 
-    private static byte[] MakeButtonPacket(bool pressed, byte map, byte action) =>
-        new[] { (byte)((pressed ? 1 : 0) | ((map & 0b11) << 2) | ((action & 0xF) << 4)) };
-
-    private static byte[] Make1DPacket(byte map, byte action, short value) =>
+    private static byte[] MakeInt16Packet(bool active, byte modus, short value) =>
         new[]
         {
-            (byte)(0b10 | ((map & 0b11) << 2) | ((action & 0xF) << 4)),
+            (byte)((active ? 1 : 0) | ((modus & 0b11) << 1)),
             (byte)(value & 0xFF),
             (byte)((value >> 8) & 0xFF)
-        };
-
-    private static byte[] Make2DPacket(byte map, byte action, short x, short y) =>
-        new[]
-        {
-            (byte)(0b11 | ((map & 0b11) << 2) | ((action & 0xF) << 4)),
-            (byte)(x & 0xFF),
-            (byte)((x >> 8) & 0xFF),
-            (byte)(y & 0xFF),
-            (byte)((y >> 8) & 0xFF)
         };
     #endregion
 

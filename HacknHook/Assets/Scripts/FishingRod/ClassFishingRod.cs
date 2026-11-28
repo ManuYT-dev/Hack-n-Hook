@@ -28,6 +28,7 @@ public class ClassFishingRod : MonoBehaviour
     [SerializeField] private float defaultAttractRadius = 200f;
     [SerializeField] private float defaultBaitWeight = 1f;
     [SerializeField] private bool destroyFishOnCatchComplete = true;
+    [SerializeField] private float reelDeadzone = 0.05f;
     #endregion
 
     #region Private Variables
@@ -92,12 +93,14 @@ public class ClassFishingRod : MonoBehaviour
     private void OnEnable()
     {
         Controlls.fishingRodActions.ToggleReady.performed += this.OnToggleReadyPerformed;
+        Controlls.fishingRodActions.ToggleReady.canceled += this.OnToggleReadyCanceled;
         Controlls.fishingRodActions.CancelCast.performed += this.OnCancelCastPerformed;
     }
 
     private void OnDisable()
     {
         Controlls.fishingRodActions.ToggleReady.performed -= this.OnToggleReadyPerformed;
+        Controlls.fishingRodActions.ToggleReady.canceled -= this.OnToggleReadyCanceled;
         Controlls.fishingRodActions.CancelCast.performed -= this.OnCancelCastPerformed;
     }
 
@@ -142,19 +145,28 @@ public class ClassFishingRod : MonoBehaviour
 
         if (this.currentState == RodState.Idle)
         {
-            this.physics.ResetState();
-            this.visuals.PositionHookAtReady(this.GetRodOriginPosition());
-            this.visuals.SetHookSprite(HookVisualState.Empty);
-            this.SetState(RodState.Ready);
-            this.OnReadyModeChanged?.Invoke(true);
+            this.SetReady(true);
         }
         else if (this.IsReady)
         {
-            this.physics.ResetState();
-            this.visuals.PositionHookAtReady(this.GetRodOriginPosition());
-            this.visuals.SetHookSprite(HookVisualState.Empty);
-            this.SetState(RodState.Idle);
-            this.OnReadyModeChanged?.Invoke(false);
+            this.SetReady(false, cancelSampling: true);
+        }
+    }
+
+    public void SetReady(bool ready, bool cancelSampling = false)
+    {
+        if (ready)
+        {
+            if (!this.CanOperateRod() || this.currentState != RodState.Idle)
+            {
+                return;
+            }
+
+            this.ResetHookToReadyState(RodState.Ready, true);
+        }
+        else if (this.currentState == RodState.Ready || (cancelSampling && this.currentState == RodState.SamplingCast))
+        {
+            this.ResetHookToReadyState(RodState.Idle, false);
         }
     }
 
@@ -249,7 +261,34 @@ public class ClassFishingRod : MonoBehaviour
     #endregion
 
     #region Private Funcs
-    private void OnToggleReadyPerformed(InputAction.CallbackContext _) => this.ToggleReady();
+    private void OnToggleReadyPerformed(InputAction.CallbackContext ctx)
+    {
+        if (ctx.control?.device is BleControllerDevice)
+        {
+            this.SetReady(true);
+        }
+        else
+        {
+            this.ToggleReady();
+        }
+    }
+
+    private void OnToggleReadyCanceled(InputAction.CallbackContext ctx)
+    {
+        if (ctx.control?.device is BleControllerDevice)
+        {
+            this.SetReady(false);
+        }
+    }
+
+    private void ResetHookToReadyState(RodState targetState, bool isReadyMode)
+    {
+        this.physics.ResetState();
+        this.visuals.PositionHookAtReady(this.GetRodOriginPosition());
+        this.visuals.SetHookSprite(HookVisualState.Empty);
+        this.SetState(targetState);
+        this.OnReadyModeChanged?.Invoke(isReadyMode);
+    }
 
     private void OnCancelCastPerformed(InputAction.CallbackContext _)
     {
@@ -280,14 +319,15 @@ public class ClassFishingRod : MonoBehaviour
 
     private void UpdateCastHookedAndReeling(float deltaTime)
     {
-        bool isReeling = Controlls.fishingRodActions.Rell.IsPressed();
+        float reelMagnitude = Mathf.Abs(Controlls.fishingRodActions.Rell.ReadValue<float>());
+        bool isReeling = reelMagnitude > this.reelDeadzone;
         Vector3 originPos = this.GetRodOriginPosition();
 
         if (isReeling)
         {
             this.physics.ClearVelocity();
             this.SetState(RodState.Reeling);
-            if (this.physics.StepReeling(this.visuals.HookTransform, originPos, deltaTime, this.activeBait, this.hookedFish))
+            if (this.physics.StepReeling(this.visuals.HookTransform, originPos, deltaTime, this.activeBait, this.hookedFish, reelMagnitude))
             {
                 this.CompleteReelIn();
             }
