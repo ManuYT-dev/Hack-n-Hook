@@ -35,7 +35,18 @@ public class InputUnitTests : MonoBehaviour
         var prevEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
 
         InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
-        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+
+        List<InputDevice> disabledRealDevices = new();
+        foreach (InputDevice dev in InputSystem.devices)
+        {
+            if (dev is not BleControllerDevice)
+            {
+                InputSystem.DisableDevice(dev);
+                InputSystem.ResetDevice(dev, alsoResetDontResetControls: true);
+                disabledRealDevices.Add(dev);
+            }
+        }
+        InputSystem.Update();
 
         try
         {
@@ -44,8 +55,17 @@ public class InputUnitTests : MonoBehaviour
         }
         finally
         {
+            foreach (InputDevice dev in disabledRealDevices)
+            {
+                if (dev.added)
+                {
+                    InputSystem.EnableDevice(dev);
+                }
+            }
+
             InputSystem.settings.backgroundBehavior = prevBg;
             InputSystem.settings.editorInputBehaviorInPlayMode = prevEditorInput;
+            InputSystem.Update();
         }
 
         string summary = $"[InputUnitTests] Finished: {this._passed} passed, {this._failed} failed.";
@@ -68,9 +88,15 @@ public class InputUnitTests : MonoBehaviour
                 new InputDevice[] { vMouse, vKeyboard, vGamepad }
             );
             Controlls.inputActions.Enable();
+            InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Aim.Reset();
             InputSystem.Update();
 
             this.RunKeyboardAndMouseTests(vMouse, vKeyboard);
+            ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
+            InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Aim.Reset();
+            InputSystem.Update();
             this.RunGamepadTests(vGamepad);
         }
         finally
@@ -212,6 +238,7 @@ public class InputUnitTests : MonoBehaviour
             Controlls.inputActions.Disable();
             Controlls.inputActions.devices = new ReadOnlyArray<InputDevice>(new InputDevice[] { ble });
             Controlls.inputActions.Enable();
+            Controlls.fishingRodActions.Aim.Reset();
             InputSystem.Update();
 
             this.RunBleTests(ble);
