@@ -14,12 +14,13 @@ public struct GlobalsSaveData
     public float totalCashEarned;
 
     [Header("Unlocks & Loadout")]
-    public BoatType equippedBoat;
-    public BoatType bestBoat;
-    public StringType equippedString;
-    public StringType bestString;
+    public EngineType equippedEngine;
+    public EngineType bestPurchasedEngine;
+    public FishingLineType equippedFishingLine;
+    public FishingLineType bestPurchasedFishingLine;
     public BaitType equippedBait;
-    public BaitType bestBait;
+    public BaitType bestPurchasedBait;
+    public int shopPurchaseMask;
 
     [Header("Stats & Records")]
     public int totalFishCaught;
@@ -43,16 +44,19 @@ public static class Globals
 
     #region Saveable State
     // Economy
+    public static int ShopSection; 
+
     public static float cash;
     public static float totalCashEarned;
 
     // Unlocks & Loadout
-    public static BoatType equippedBoat = BoatType.FisherBoat;
-    public static BoatType bestBoat = BoatType.FisherBoat;
-    public static StringType equippedString = StringType.Cobweb;
-    public static StringType bestString = StringType.Cobweb;
-    public static BaitType equippedBait = BaitType.Level1;
-    public static BaitType bestBait = BaitType.Level1;
+    public static EngineType equippedEngine = EngineType.Level0;
+    public static EngineType bestPurchasedEngine = EngineType.Level0;
+    public static FishingLineType equippedFishingLine = FishingLineType.Level0;
+    public static FishingLineType bestPurchasedFishingLine = FishingLineType.Level0;
+    public static BaitType equippedBait = BaitType.Level0;
+    public static BaitType bestPurchasedBait = BaitType.Level0;
+    public static int shopPurchaseMask;
 
     // Stats & Records
     public static int totalFishCaught;
@@ -61,6 +65,18 @@ public static class Globals
     public static float maxDepthReached;
     public static Dictionary<FishType, int> caughtFishCounts = new Dictionary<FishType, int>();
     #endregion
+
+    // One byte per shop section, one bit per purchasable level (1 through 8).
+    public static bool HasPurchased(int section, int level)
+    {
+        return (shopPurchaseMask & (1 << (section * 8 + level - 1))) != 0;
+    }
+
+    public static void MarkPurchased(int section, int level)
+    {
+        if (section >= 0 && section < 3 && level >= 1 && level <= (section == 2 ? 8 : 3))
+            shopPurchaseMask |= 1 << (section * 8 + level - 1);
+    }
 
     static Globals()
     {
@@ -89,12 +105,13 @@ public static class Globals
         cash = 0f;
         totalCashEarned = 0f;
 
-        equippedBoat = BoatType.FisherBoat;
-        bestBoat = BoatType.FisherBoat;
-        equippedString = StringType.Cobweb;
-        bestString = StringType.Cobweb;
-        equippedBait = BaitType.Level1;
-        bestBait = BaitType.Level1;
+        equippedEngine = EngineType.Level0;
+        bestPurchasedEngine = EngineType.Level0;
+        equippedFishingLine = FishingLineType.Level0;
+        bestPurchasedFishingLine = FishingLineType.Level0;
+        equippedBait = BaitType.Level0;
+        bestPurchasedBait = BaitType.Level0;
+        shopPurchaseMask = 0;
 
 
         totalFishCaught = 0;
@@ -138,12 +155,20 @@ public static class Globals
         cash = data.cash;
         totalCashEarned = data.totalCashEarned;
 
-        equippedBoat = data.equippedBoat;
-        bestBoat = data.bestBoat;
-        equippedString = data.equippedString;
-        bestString = data.bestString;
+        equippedEngine = data.equippedEngine;
+        bestPurchasedEngine = data.bestPurchasedEngine;
+        equippedFishingLine = data.equippedFishingLine;
+        bestPurchasedFishingLine = data.bestPurchasedFishingLine;
         equippedBait = data.equippedBait;
-        bestBait = data.bestBait;
+        bestPurchasedBait = data.bestPurchasedBait;
+        shopPurchaseMask = data.shopPurchaseMask;
+        // Older saves also establish ownership through equipped and best gear.
+        MarkPurchased(0, (int)equippedEngine);
+        MarkPurchased(0, (int)bestPurchasedEngine);
+        MarkPurchased(1, (int)equippedFishingLine);
+        MarkPurchased(1, (int)bestPurchasedFishingLine);
+        MarkPurchased(2, (int)equippedBait);
+        MarkPurchased(2, (int)bestPurchasedBait);
 
         totalFishCaught = data.totalFishCaught;
         heaviestFishWeight = data.heaviestFishWeight;
@@ -163,12 +188,13 @@ public static class Globals
         {
             cash = cash,
             totalCashEarned = totalCashEarned,
-            equippedBoat = equippedBoat,
-            bestBoat = bestBoat,
-            equippedString = equippedString,
-            bestString = bestString,
+            equippedEngine = equippedEngine,
+            bestPurchasedEngine = bestPurchasedEngine,
+            equippedFishingLine = equippedFishingLine,
+            bestPurchasedFishingLine = bestPurchasedFishingLine,
             equippedBait = equippedBait,
-            bestBait = bestBait,
+            bestPurchasedBait = bestPurchasedBait,
+            shopPurchaseMask = shopPurchaseMask,
             totalFishCaught = totalFishCaught,
             heaviestFishWeight = heaviestFishWeight,
             maxDistanceReached = maxDistanceReached,

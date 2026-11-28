@@ -9,6 +9,7 @@ public class ScriptableBait : ScriptableObject
     [SerializeField] private float attractRadius = 100f;
     [SerializeField] private float weightMultiplier = 1f;
     [SerializeField] private Sprite sprite;
+    public float StandardPrice = 0f;
     #endregion
 
     #region Code Fields

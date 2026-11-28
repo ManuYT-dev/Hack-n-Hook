@@ -2,10 +2,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 [JsonConverter(typeof(StringEnumConverter))]
-public enum BoatType
+public enum EngineType
 {
-    FisherBoat,
-    MidBoat,
-    Yacht
+    Level0,
+    Level1,
+    Level2,
+    Level3
 }
 

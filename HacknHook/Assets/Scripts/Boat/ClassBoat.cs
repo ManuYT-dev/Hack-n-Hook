@@ -18,9 +18,9 @@ public class ClassBoat : MonoBehaviour
 
     #region Inspector Fields
     [Header("Boat Data")]
-    [SerializeField] private ScriptableBoat boatData;
+    [SerializeField] private ScriptableEngine boatData;
 
-    [Header("Stats (Overridden by ScriptableBoat when assigned)")]
+    [Header("Stats (Overridden by ScriptableEngine when assigned)")]
     [SerializeField] private string boatName;
     [SerializeField] private float speed = 5f;
     [SerializeField] private float boostedSpeed = 10f;
@@ -64,7 +64,7 @@ public class ClassBoat : MonoBehaviour
     #endregion
 
     #region Properties
-    public ScriptableBoat BoatData => this.boatData;
+    public ScriptableEngine BoatData => this.boatData;
     public string BoatName => this.boatName;
     public float Speed => this.speed;
     public float BoostedSpeed => this.boostedSpeed;
@@ -129,7 +129,7 @@ public class ClassBoat : MonoBehaviour
 
         if (!this.initialized && this.boatData == null)
         {
-            Debug.LogWarning($"[ClassBoat.Start] {this.gameObject.name} has no ScriptableBoat assigned; using inspector values.");
+            Debug.LogWarning($"[ClassBoat.Start] {this.gameObject.name} has no ScriptableEngine assigned; using inspector values.");
         }
     }
 
@@ -168,11 +168,11 @@ public class ClassBoat : MonoBehaviour
     #endregion
 
     #region Public Funcs
-    public void Init(ScriptableBoat scriptableBoat)
+    public void Init(ScriptableEngine scriptableBoat)
     {
         if (scriptableBoat == null)
         {
-            Debug.LogError($"[ClassBoat.Init] ScriptableBoat is null on {this.gameObject.name}.");
+            Debug.LogError($"[ClassBoat.Init] ScriptableEngine is null on {this.gameObject.name}.");
             return;
         }
 
@@ -335,7 +335,7 @@ public class ClassBoat : MonoBehaviour
     #endregion
 
     #region Private Funcs
-    private void ApplyBoatData(ScriptableBoat data)
+    private void ApplyBoatData(ScriptableEngine data)
     {
         this.boatData = data;
         this.boatName = data.BoatName;

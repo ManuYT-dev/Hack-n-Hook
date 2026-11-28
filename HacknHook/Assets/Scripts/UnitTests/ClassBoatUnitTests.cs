@@ -161,7 +161,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             Sprite sprite = this.CreateTestSprite();
-            ScriptableBoat data = this.CreateScriptableBoat("Sloop", 7.5f, 14f, 20f, 12f, 250f, 120, sprite);
+            ScriptableEngine data = this.CreateScriptableEngine("Sloop", 7.5f, 14f, 20f, 12f, 250f, 120, sprite);
 
             GameObject go = this.Track(new GameObject("AwakeBoat"));
             go.SetActive(false);
@@ -185,17 +185,17 @@ public class ClassBoatUnitTests : MonoBehaviour
                 boat.MaxDistance == 120 &&
                 childRenderer.sprite == sprite;
 
-            this.Record("Awake applies ScriptableBoat and resolves child SpriteRenderer", ok,
+            this.Record("Awake applies ScriptableEngine and resolves child SpriteRenderer", ok,
                 $"name={boat.BoatName}, speed={boat.Speed}, spriteAssigned={childRenderer.sprite == sprite}");
         });
 
-        // 3. Init(ScriptableBoat) updates stats, root SpriteRenderer, and supports re-initialization
+        // 3. Init(ScriptableEngine) updates stats, root SpriteRenderer, and supports re-initialization
         this.RunIsolated(() =>
         {
             Sprite spriteA = this.CreateTestSprite();
             Sprite spriteB = this.CreateTestSprite();
-            ScriptableBoat dataA = this.CreateScriptableBoat("Cutter", 6f, 11f, 12f, 9f, 100f, 80, spriteA);
-            ScriptableBoat dataB = this.CreateScriptableBoat("Galleon", 9f, 18f, 25f, 6f, 900f, 300, spriteB);
+            ScriptableEngine dataA = this.CreateScriptableEngine("Cutter", 6f, 11f, 12f, 9f, 100f, 80, spriteA);
+            ScriptableEngine dataB = this.CreateScriptableEngine("Galleon", 9f, 18f, 25f, 6f, 900f, 300, spriteB);
 
             ClassBoat boat = this.CreateBoat("InitBoat", addRootSpriteRenderer: true);
             SpriteRenderer sr = boat.GetComponent<SpriteRenderer>();
@@ -224,15 +224,15 @@ public class ClassBoatUnitTests : MonoBehaviour
                 boat.MaxDistance == 300 &&
                 sr.sprite == spriteB;
 
-            this.Record("Init(ScriptableBoat) initializes and re-initializes stats & sprite", firstOk && secondOk,
+            this.Record("Init(ScriptableEngine) initializes and re-initializes stats & sprite", firstOk && secondOk,
                 $"firstOk={firstOk}, secondOk={secondOk}, finalName={boat.BoatName}");
         });
 
-        // 4. Init(null) preserves existing ScriptableBoat and stats without throwing
+        // 4. Init(null) preserves existing ScriptableEngine and stats without throwing
         this.RunIsolated(() =>
         {
             Sprite sprite = this.CreateTestSprite();
-            ScriptableBoat data = this.CreateScriptableBoat("Skiff", 8f, 15f, 16f, 10f, 150f, 60, sprite);
+            ScriptableEngine data = this.CreateScriptableEngine("Skiff", 8f, 15f, 16f, 10f, 150f, 60, sprite);
             ClassBoat boat = this.CreateBoat("NullInitBoat", addRootSpriteRenderer: true);
             SpriteRenderer sr = boat.GetComponent<SpriteRenderer>();
             boat.Init(data);
@@ -255,7 +255,7 @@ public class ClassBoatUnitTests : MonoBehaviour
                 boat.MaxDistance == 60 &&
                 sr.sprite == sprite;
 
-            this.Record("Init(null) preserves existing ScriptableBoat and stats", ok,
+            this.Record("Init(null) preserves existing ScriptableEngine and stats", ok,
                 $"name={boat.BoatName}, speed={boat.Speed}");
         });
 
@@ -346,7 +346,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("AnchorClearsBoostBoat");
-            boat.Init(this.CreateScriptableBoat("BoostAnchor", 5f, 10f, 15f, 8f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("BoostAnchor", 5f, 10f, 15f, 8f, 0f, 0, null));
 
             List<bool> boostEvents = new();
             boat.OnBoostChanged += v => boostEvents.Add(v);
@@ -439,7 +439,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("FishingBlocksBoat");
-            boat.Init(this.CreateScriptableBoat("Fisher", 5f, 10f, 15f, 8f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Fisher", 5f, 10f, 15f, 8f, 0f, 0, null));
 
             int interactCalls = 0;
             List<bool> boostEvents = new();
@@ -481,7 +481,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("ZeroDtBoat");
-            boat.Init(this.CreateScriptableBoat("NoDt", 6f, 12f, 20f, 8f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("NoDt", 6f, 12f, 20f, 8f, 0f, 0, null));
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
@@ -505,7 +505,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("DeadzoneBoat");
-            boat.Init(this.CreateScriptableBoat("Analog", 10f, 15f, 100f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Analog", 10f, 15f, 100f, 0f, 0f, 0, null));
             SetPrivateField(boat, "inputDeadzone", 0.3f);
 
             SendGamepad(gamepad, new GamepadState { leftStick = new Vector2(0.25f, 0f) });
@@ -535,7 +535,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("AccelBoat");
-            boat.Init(this.CreateScriptableBoat("Runner", 8f, 16f, 10f, 8f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Runner", 8f, 16f, 10f, 8f, 0f, 0, null));
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
@@ -568,7 +568,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("InstantVelBoat");
-            boat.Init(this.CreateScriptableBoat("Instant", 7f, 14f, 0f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Instant", 7f, 14f, 0f, 0f, 0f, 0, null));
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
@@ -589,7 +589,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("BoostBoat");
-            boat.Init(this.CreateScriptableBoat("Speedboat", 5f, 12f, 50f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Speedboat", 5f, 12f, 50f, 0f, 0f, 0, null));
 
             List<bool> boostEvents = new();
             boat.OnBoostChanged += v => boostEvents.Add(v);
@@ -616,7 +616,7 @@ public class ClassBoatUnitTests : MonoBehaviour
                 Mathf.Approximately(boat.CurrentVelocity, 5f);
 
             // Fallback when boostedSpeed <= 0 uses normal speed
-            boat.Init(this.CreateScriptableBoat("NoBoostCap", 6f, 0f, 100f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("NoBoostCap", 6f, 0f, 100f, 0f, 0f, 0, null));
             SendKeyboard(keyboard, new KeyboardState(Key.D, Key.LeftShift));
             InputSystem.Update();
             boat.StepMovement(0.2f);
@@ -634,7 +634,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("AnchorBrakeBoat");
-            boat.Init(this.CreateScriptableBoat("Braker", 10f, 15f, 10f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Braker", 10f, 15f, 10f, 0f, 0f, 0, null));
             SetPrivateField(boat, "anchorDecelerationMultiplier", 2.5f);
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
@@ -649,7 +649,7 @@ public class ClassBoatUnitTests : MonoBehaviour
 
             // With acceleration == 0, anchor uses Max(speed, 10f) * multiplier
             boat.SetAnchored(false);
-            boat.Init(this.CreateScriptableBoat("ZeroAccelBraker", 6f, 12f, 0f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("ZeroAccelBraker", 6f, 12f, 0f, 0f, 0f, 0, null));
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
             boat.StepMovement(0.1f); // v = 6
@@ -674,7 +674,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("TurnBrakeBoat");
-            boat.Init(this.CreateScriptableBoat("Turner", 10f, 15f, 5f, 20f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Turner", 10f, 15f, 5f, 20f, 0f, 0, null));
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
@@ -713,7 +713,7 @@ public class ClassBoatUnitTests : MonoBehaviour
             visualChild.transform.SetParent(childBoatGo.transform, false);
             visualChild.AddComponent<SpriteRenderer>();
             ClassBoat childBoat = childBoatGo.AddComponent<ClassBoat>();
-            childBoat.Init(this.CreateScriptableBoat("ChildRot", 5f, 10f, 15f, 0f, 0f, 0, null)); // turnSpeed=0 snaps
+            childBoat.Init(this.CreateScriptableEngine("ChildRot", 5f, 10f, 15f, 0f, 0f, 0, null)); // turnSpeed=0 snaps
 
             SendKeyboard(keyboard, new KeyboardState(Key.A));
             InputSystem.Update();
@@ -722,7 +722,7 @@ public class ClassBoatUnitTests : MonoBehaviour
 
             // Mode 2: root SpriteRenderer without children -> transform.rotation
             ClassBoat rootBoat = this.CreateBoat("RootVisualBoat", addRootSpriteRenderer: true);
-            rootBoat.Init(this.CreateScriptableBoat("RootRot", 5f, 10f, 15f, 0f, 0f, 0, null));
+            rootBoat.Init(this.CreateScriptableEngine("RootRot", 5f, 10f, 15f, 0f, 0f, 0, null));
             rootBoat.StepMovement(0.05f);
             bool rootRotOk = IsYawClose(rootBoat.transform.rotation, 180f);
 
@@ -730,7 +730,7 @@ public class ClassBoatUnitTests : MonoBehaviour
             ClassBoat flipBoat = this.CreateBoat("FlipXBoat", addRootSpriteRenderer: true);
             SpriteRenderer flipSr = flipBoat.GetComponent<SpriteRenderer>();
             new GameObject("ExtraChild").transform.SetParent(flipBoat.transform, false);
-            flipBoat.Init(this.CreateScriptableBoat("FlipX", 5f, 10f, 15f, 0f, 0f, 0, null));
+            flipBoat.Init(this.CreateScriptableEngine("FlipX", 5f, 10f, 15f, 0f, 0f, 0, null));
             flipBoat.StepMovement(0.05f);
             bool flipXLeftOk = flipSr.flipX && IsYawClose(flipBoat.transform.rotation, 0f);
 
@@ -746,7 +746,7 @@ public class ClassBoatUnitTests : MonoBehaviour
             ClassBoat leftBoat = leftBoatGo.AddComponent<ClassBoat>();
             SetPrivateField(leftBoat, "facesLeftByDefault", true);
             leftBoatGo.SetActive(true);
-            leftBoat.Init(this.CreateScriptableBoat("LeftDef", 5f, 10f, 15f, 0f, 0f, 0, null));
+            leftBoat.Init(this.CreateScriptableEngine("LeftDef", 5f, 10f, 15f, 0f, 0f, 0, null));
 
             bool initialLeftBoatYawOk = IsYawClose(leftBoat.transform.rotation, 180f); // facing +1 => 180
             SendKeyboard(keyboard, new KeyboardState(Key.A));
@@ -772,8 +772,8 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("LeftClampBoat");
-            boat.Init(this.CreateScriptableBoat("LeftClamp", 10f, 15f, 100f, 0f, 0f, 0, null));
-            boat.transform.position = new Vector3(-3519.8f, 0f, 0f);
+            boat.Init(this.CreateScriptableEngine("LeftClamp", 10f, 15f, 100f, 0f, 0f, 0, null));
+            boat.transform.position = new Vector3(0.2f, 0f, 0f);
 
             SendKeyboard(keyboard, new KeyboardState(Key.A));
             InputSystem.Update();
@@ -795,8 +795,8 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("MaxDistBoat");
-            boat.Init(this.CreateScriptableBoat("Bound", 10f, 15f, 100f, 0f, 0f, 10, null));
-            boat.transform.position = new Vector3(12349.5f, 0f, 0f);
+            boat.Init(this.CreateScriptableEngine("Bound", 10f, 15f, 100f, 0f, 0f, 10, null));
+            boat.transform.position = new Vector3(9.5f, 0f, 0f);
 
             int maxDistEvents = 0;
             boat.OnMaxDistanceReached += () => maxDistEvents++;
@@ -840,7 +840,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("UnboundedBoat");
-            boat.Init(this.CreateScriptableBoat("Free", 10f, 15f, 100f, 0f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Free", 10f, 15f, 100f, 0f, 0f, 0, null));
             boat.transform.position = new Vector3(19.5f, 0f, 0f);
 
             int maxDistEvents = 0;
@@ -984,7 +984,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("DisableBoostBoat");
-            boat.Init(this.CreateScriptableBoat("Disabler", 5f, 10f, 15f, 8f, 0f, 0, null));
+            boat.Init(this.CreateScriptableEngine("Disabler", 5f, 10f, 15f, 8f, 0f, 0, null));
 
             int boostOffCount = 0;
             boat.OnBoostChanged += b => { if (!b) boostOffCount++; };
@@ -1047,7 +1047,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         try
         {
             boat = this.CreateBoat("UpdateFrameBoat");
-            boat.Init(this.CreateScriptableBoat("Updater", 8f, 16f, 40f, 8f, 0f, 100, null));
+            boat.Init(this.CreateScriptableEngine("Updater", 8f, 16f, 40f, 8f, 0f, 100, null));
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
@@ -1110,7 +1110,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         return go.AddComponent<ClassBoat>();
     }
 
-    private ScriptableBoat CreateScriptableBoat(
+    private ScriptableEngine CreateScriptableEngine(
         string boatName,
         float speed,
         float boostedSpeed,
@@ -1120,7 +1120,7 @@ public class ClassBoatUnitTests : MonoBehaviour
         int maxDistance,
         Sprite sprite)
     {
-        ScriptableBoat data = this.Track(ScriptableObject.CreateInstance<ScriptableBoat>());
+        ScriptableEngine data = this.Track(ScriptableObject.CreateInstance<ScriptableEngine>());
         SetPrivateField(data, "boatName", boatName);
         SetPrivateField(data, "speed", speed);
         SetPrivateField(data, "boostedSpeed", boostedSpeed);

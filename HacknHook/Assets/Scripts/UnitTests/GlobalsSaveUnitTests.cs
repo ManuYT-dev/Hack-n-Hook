@@ -87,19 +87,19 @@ public class GlobalsSaveUnitTests : MonoBehaviour
     {
         Globals.cash = 999f;
         Globals.isPaused = true;
-        Globals.equippedBoat = BoatType.Yacht;
+        Globals.equippedEngine = EngineType.Level3;
         Globals.caughtFishCounts[FishType.Barsch] = 5;
 
         Globals.ResetToDefaults();
 
         this.Assert("ResetToDefaults -> cash == 0", Mathf.Approximately(Globals.cash, 0f));
         this.Assert("ResetToDefaults -> totalCashEarned == 0", Mathf.Approximately(Globals.totalCashEarned, 0f));
-        this.Assert("ResetToDefaults -> equippedBoat == FisherBoat", Globals.equippedBoat == BoatType.FisherBoat);
-        this.Assert("ResetToDefaults -> bestBoat == FisherBoat", Globals.bestBoat == BoatType.FisherBoat);
-        this.Assert("ResetToDefaults -> equippedString == Cobweb", Globals.equippedString == StringType.Cobweb);
-        this.Assert("ResetToDefaults -> bestString == Cobweb", Globals.bestString == StringType.Cobweb);
-        this.Assert("ResetToDefaults -> equippedBait == Level1", Globals.equippedBait == BaitType.Level1);
-        this.Assert("ResetToDefaults -> bestBait == Level1", Globals.bestBait == BaitType.Level1);
+        this.Assert("ResetToDefaults -> equippedEngine == Level0", Globals.equippedEngine == EngineType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedEngine == Level0", Globals.bestPurchasedEngine == EngineType.Level0);
+        this.Assert("ResetToDefaults -> equippedFishingLine == Level0", Globals.equippedFishingLine == FishingLineType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedFishingLine == Level0", Globals.bestPurchasedFishingLine == FishingLineType.Level0);
+        this.Assert("ResetToDefaults -> equippedBait == Level0", Globals.equippedBait == BaitType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedBait == Level0", Globals.bestPurchasedBait == BaitType.Level0);
         this.Assert("ResetToDefaults -> totalFishCaught == 0", Globals.totalFishCaught == 0);
         this.Assert("ResetToDefaults -> caughtFishCounts empty", Globals.caughtFishCounts != null && Globals.caughtFishCounts.Count == 0);
         this.Assert("ResetToDefaults -> boatInstance == null", Globals.boatInstance == null);
@@ -114,12 +114,12 @@ public class GlobalsSaveUnitTests : MonoBehaviour
 
         Globals.cash = 1234.5f;
         Globals.totalCashEarned = 5000f;
-        Globals.equippedBoat = BoatType.MidBoat;
-        Globals.bestBoat = BoatType.Yacht;
-        Globals.equippedString = StringType.String;
-        Globals.bestString = StringType.GoldString;
+        Globals.equippedEngine = EngineType.Level2;
+        Globals.bestPurchasedEngine = EngineType.Level3;
+        Globals.equippedFishingLine = FishingLineType.Level2;
+        Globals.bestPurchasedFishingLine = FishingLineType.Level3;
         Globals.equippedBait = BaitType.Level2;
-        Globals.bestBait = BaitType.Level3;
+        Globals.bestPurchasedBait = BaitType.Level3;
         Globals.totalFishCaught = 42;
         Globals.heaviestFishWeight = 18.75f;
         Globals.maxDistanceReached = 350f;
@@ -150,12 +150,12 @@ public class GlobalsSaveUnitTests : MonoBehaviour
         this.Assert("Globals.Load(json) -> returns true", loaded);
         this.Assert("Globals.Load(json) -> restores cash", Mathf.Approximately(Globals.cash, 1234.5f));
         this.Assert("Globals.Load(json) -> restores totalCashEarned", Mathf.Approximately(Globals.totalCashEarned, 5000f));
-        this.Assert("Globals.Load(json) -> restores equippedBoat", Globals.equippedBoat == BoatType.MidBoat);
-        this.Assert("Globals.Load(json) -> restores bestBoat", Globals.bestBoat == BoatType.Yacht);
-        this.Assert("Globals.Load(json) -> restores equippedString", Globals.equippedString == StringType.String);
-        this.Assert("Globals.Load(json) -> restores bestString", Globals.bestString == StringType.GoldString);
+        this.Assert("Globals.Load(json) -> restores equippedEngine", Globals.equippedEngine == EngineType.Level2);
+        this.Assert("Globals.Load(json) -> restores bestPurchasedEngine", Globals.bestPurchasedEngine == EngineType.Level3);
+        this.Assert("Globals.Load(json) -> restores equippedFishingLine", Globals.equippedFishingLine == FishingLineType.Level2);
+        this.Assert("Globals.Load(json) -> restores bestPurchasedFishingLine", Globals.bestPurchasedFishingLine == FishingLineType.Level3);
         this.Assert("Globals.Load(json) -> restores equippedBait", Globals.equippedBait == BaitType.Level2);
-        this.Assert("Globals.Load(json) -> restores bestBait", Globals.bestBait == BaitType.Level3);
+        this.Assert("Globals.Load(json) -> restores bestPurchasedBait", Globals.bestPurchasedBait == BaitType.Level3);
         this.Assert("Globals.Load(json) -> restores totalFishCaught", Globals.totalFishCaught == 42);
         this.Assert("Globals.Load(json) -> restores heaviestFishWeight", Mathf.Approximately(Globals.heaviestFishWeight, 18.75f));
         this.Assert("Globals.Load(json) -> restores maxDistanceReached", Mathf.Approximately(Globals.maxDistanceReached, 350f));
@@ -194,8 +194,8 @@ public class GlobalsSaveUnitTests : MonoBehaviour
 
         Globals.ResetToDefaults();
         Globals.cash = 450f;
-        Globals.equippedBoat = BoatType.Yacht;
-        Globals.bestBoat = BoatType.Yacht;
+        Globals.equippedEngine = EngineType.Level3;
+        Globals.bestPurchasedEngine = EngineType.Level3;
         Globals.caughtFishCounts[FishType.Forelle] = 7;
 
         bool saved = SerializeGame.Save();
@@ -206,19 +206,19 @@ public class GlobalsSaveUnitTests : MonoBehaviour
         bool loaded = SerializeGame.Load();
         this.Assert("SerializeGame.Load -> returns true", loaded);
         this.Assert("SerializeGame.Load -> restores cash", Mathf.Approximately(Globals.cash, 450f));
-        this.Assert("SerializeGame.Load -> restores equippedBoat", Globals.equippedBoat == BoatType.Yacht);
+        this.Assert("SerializeGame.Load -> restores equippedEngine", Globals.equippedEngine == EngineType.Level3);
         this.Assert("SerializeGame.Load -> restores caughtFishCounts",
             Globals.caughtFishCounts.TryGetValue(FishType.Forelle, out int forelle) && forelle == 7);
 
         // Overwrite same single save slot
         Globals.cash = 900f;
-        Globals.equippedString = StringType.GoldString;
+        Globals.equippedFishingLine = FishingLineType.Level3;
         this.Assert("SerializeGame.Save (overwrite) -> returns true", SerializeGame.Save());
 
         Globals.ResetToDefaults();
         this.Assert("SerializeGame.Load (after overwrite) -> returns true", SerializeGame.Load());
         this.Assert("SerializeGame.Load (after overwrite) -> cash == 900", Mathf.Approximately(Globals.cash, 900f));
-        this.Assert("SerializeGame.Load (after overwrite) -> equippedString == GoldString", Globals.equippedString == StringType.GoldString);
+        this.Assert("SerializeGame.Load (after overwrite) -> equippedFishingLine == Level3", Globals.equippedFishingLine == FishingLineType.Level3);
 
         bool deleted = SerializeGame.DeleteSave();
         this.Assert("SerializeGame.DeleteSave -> returns true", deleted);
