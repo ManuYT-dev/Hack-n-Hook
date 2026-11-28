@@ -4,7 +4,13 @@ public class ClassFish : MonoBehaviour
 {
     #region Properties
 
+    private const float MinWeightFactor = 0.5f;
+    private const float MaxWeightFactor = 1.5f;
+
     private float defaultPrice;
+    private float defaultWeight;
+    private float fishCurWeight;
+    private float fishMaxWeight;
 
     #region Positions
     private float roamRadius;
@@ -49,6 +55,9 @@ public class ClassFish : MonoBehaviour
     public FishType FishTypeCurrent => this.fishType;
     public string FishName => this.fishName;
     public float DefaultPrice => this.defaultPrice;
+    public float DefaultWeight => this.defaultWeight;
+    public float FishCurWeight => this.fishCurWeight;
+    public float FishMaxWeight => this.fishMaxWeight;
     public bool IsHooked => this.hasEaten && this.IsBaitAvailable(this.targetBait) && this.targetBait.ClaimedByFish == this;
     #endregion
 
@@ -68,7 +77,7 @@ public class ClassFish : MonoBehaviour
         this.InitFish(scriptableFish);
     }
 
-    public void InitFish(ScriptableFish scriptableFish, float weight_multiplier = 1, float x_pos = 0, float y_pos = 0)
+    public void InitFish(ScriptableFish scriptableFish, float x_pos = 0, float y_pos = 0)
     {
         if (scriptableFish == null)
         {
@@ -81,6 +90,9 @@ public class ClassFish : MonoBehaviour
         this.speed = scriptableFish.Speed;
         this.boostedSpeed = scriptableFish.BoostedSpeed;
         this.defaultPrice = scriptableFish.DefaultPrice;
+        this.defaultWeight = scriptableFish.DefaultWeight;
+        this.fishMaxWeight = this.defaultWeight * MaxWeightFactor;
+        this.fishCurWeight = Random.Range(this.defaultWeight * MinWeightFactor, this.fishMaxWeight);
         this.roamRadius = scriptableFish.RoamRadius;
         this.huntRadius = scriptableFish.HuntRadius;
 
@@ -93,7 +105,7 @@ public class ClassFish : MonoBehaviour
         this.roamCenter = new Vector2(x_pos, y_pos);
         this.targetRotation = this.transform.rotation;
 
-        Debug.Log($"[ClassFish.InitFish] {this.fishName} initialisiert als {this.fishType} an Position ({this.roamCenter.x:F1}, {this.roamCenter.y:F1})");
+        Debug.Log($"[ClassFish.InitFish] {this.fishName} initialisiert als {this.fishType} an Position ({this.roamCenter.x:F1}, {this.roamCenter.y:F1}), Gewicht: {this.fishCurWeight:F2}/{this.fishMaxWeight:F2}");
         this.GenerateNewTarget();
     }
     #endregion
@@ -186,6 +198,8 @@ public class ClassFish : MonoBehaviour
         this.targetBait = null;
         this.currentState = FishState.Moving;
 
+        this.SellFish();
+
         Debug.Log($"[ClassFish.CompleteCatch] {this.fishName} ({this.fishType}) wurde gefangen");
 
         if (destroyGameObject && this.gameObject != null)
@@ -196,6 +210,20 @@ public class ClassFish : MonoBehaviour
         {
             this.GenerateNewTarget();
         }
+    }
+    #endregion
+
+    #region Economy
+    private void SellFish()
+    {
+        float price = this.fishMaxWeight > 0f
+            ? (this.fishCurWeight / this.fishMaxWeight) * this.defaultPrice
+            : this.defaultPrice;
+
+        Globals.cash += price;
+        Globals.totalCashEarned += price;
+
+        Debug.Log($"[ClassFish.SellFish] {this.fishName} verkauft für {price:F2} (Gewicht: {this.fishCurWeight:F2}/{this.fishMaxWeight:F2}) -> Cash: {Globals.cash:F2}");
     }
     #endregion
 
