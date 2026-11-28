@@ -62,6 +62,16 @@ public class ClassFishingRod : MonoBehaviour
     #region Unity Funcs
     private void Awake()
     {
+        if (hookCameraSwitcher == null)
+        {
+            hookCameraSwitcher = GetComponent<HookCameraSwitcher>();
+        }
+
+        if (hookCameraSwitcher == null)
+        {
+            Debug.LogError("HookCameraSwitcher fehlt auf diesem GameObject.", this);
+        }
+
         if (this.rodOrigin == null)
         {
             this.rodOrigin = this.transform;
@@ -355,6 +365,8 @@ public class ClassFishingRod : MonoBehaviour
         }
     }
 
+    [SerializeField] private HookCameraSwitcher hookCameraSwitcher;
+
     private void SpawnAndAttachBait()
     {
         this.CleanupActiveBait();
@@ -383,6 +395,13 @@ public class ClassFishingRod : MonoBehaviour
         bait.OnFishClaimed += this.HandleFishClaimed;
         this.activeBait = bait;
         this.visuals.SetHookSprite(HookVisualState.Baited);
+        this.activeBait = bait;
+        this.visuals.SetHookSprite(HookVisualState.Baited);
+
+        if (this.hookCameraSwitcher != null)
+        {
+            this.hookCameraSwitcher.HookWasThrown(baitObject.transform);
+        }
     }
 
     private void HandleFishClaimed(ClassFish fish)
