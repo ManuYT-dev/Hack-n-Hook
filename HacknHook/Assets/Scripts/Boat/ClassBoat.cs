@@ -327,7 +327,11 @@ public class ClassBoat : MonoBehaviour
     {
         if (this.spriteRenderer == null)
         {
-            this.spriteRenderer = this.GetComponent<SpriteRenderer>() ?? this.GetComponentInChildren<SpriteRenderer>();
+            this.spriteRenderer = this.GetComponent<SpriteRenderer>();
+            if (this.spriteRenderer == null)
+            {
+                this.spriteRenderer = this.GetComponentInChildren<SpriteRenderer>(true);
+            }
         }
 
         if (this.visualTransform == null)

@@ -7,6 +7,7 @@ public class UnitTestRunner : MonoBehaviour
     void Start()
     {
         this.AddComponent<InputUnitTests>();
+        this.AddComponent<ClassBoatUnitTests>();
     }
     #endregion
 }
