@@ -254,6 +254,7 @@ public class SpawnFish : MonoBehaviour
 
         SpriteRenderer spriteRenderer = fishObject.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = scriptableFish.SpriteFish;
+        spriteRenderer.sortingLayerName = "Fishes";
         spriteRenderer.sortingOrder = 10;
 
         ClassFish fish = fishObject.AddComponent<ClassFish>();
