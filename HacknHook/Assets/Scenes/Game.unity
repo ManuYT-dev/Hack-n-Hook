@@ -1034,6 +1034,8 @@ MonoBehaviour:
   interactLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  engineAudioSource: {fileID: 0}
+  moveSoundThreshold: 0.1
 --- !u!1 &371968725
 GameObject:
   m_ObjectHideFlags: 0
@@ -2443,8 +2445,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4569, y: 1316}
-  m_SizeDelta: {x: 2600, y: 1700}
+  m_AnchoredPosition: {x: -4671, y: 1310}
+  m_SizeDelta: {x: 2800, y: 1700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1158487706
 MonoBehaviour:
@@ -2519,7 +2521,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -3371, y: 2240}
-  m_SizeDelta: {x: 5000, y: 700}
+  m_SizeDelta: {x: 6000, y: 700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1183048511
 MonoBehaviour:

@@ -51,6 +51,8 @@ public class ClassBoat : MonoBehaviour
     private bool initialized;
     private bool isQuitting;
     private Vector3 spawnPosition;
+    [SerializeField] private AudioSource engineAudioSource;
+    [SerializeField] private float moveSoundThreshold = 0.1f;
     #endregion
 
     #region Events
@@ -112,6 +114,11 @@ public class ClassBoat : MonoBehaviour
 
     private void Start()
     {
+        engineAudioSource = this.gameObject.AddComponent<AudioSource>();
+        engineAudioSource.clip = Resources.Load<AudioClip>("Game/Sounds/paddle_boat");
+        engineAudioSource.loop = true;
+        engineAudioSource.playOnAwake = false;
+
         (int x, int y) = DefaultSettings.max_chunk;
         if (y == 1)
             this.MAX_RIGHT = 1000f;
@@ -156,6 +163,7 @@ public class ClassBoat : MonoBehaviour
     private void Update()
     {
         this.StepMovement(Time.deltaTime);
+        this.UpdateEngineSound();
     }
     #endregion
 
@@ -341,6 +349,23 @@ public class ClassBoat : MonoBehaviour
         this.initialized = true;
 
         this.ApplySprite();
+    }
+
+    private void UpdateEngineSound()
+    {
+        bool moving = Mathf.Abs(this.currentVelocity) > 0.1f;
+
+        float targetVolume = moving ? 1f : 0f;
+
+        this.engineAudioSource.volume = Mathf.MoveTowards(
+            this.engineAudioSource.volume,
+            targetVolume,
+            Time.deltaTime * 2f);
+
+        if (!this.engineAudioSource.isPlaying)
+        {
+            this.engineAudioSource.Play();
+        }
     }
 
     private void ResolveVisualComponents()
