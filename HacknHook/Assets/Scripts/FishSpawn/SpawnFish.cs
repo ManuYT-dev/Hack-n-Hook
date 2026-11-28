@@ -1,4 +1,3 @@
-using Assets.Scripts.FishMovement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
