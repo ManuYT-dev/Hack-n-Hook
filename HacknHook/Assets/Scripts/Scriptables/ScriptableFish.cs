@@ -8,6 +8,7 @@ public class ScriptableFish : ScriptableObject
     [SerializeField] private float speed;
     [SerializeField] private float boostedSpeed;
     [SerializeField] private float defaultPrice;
+    [SerializeField] private float defaultWeight;
     [SerializeField] private float roamRadius;
     [SerializeField] private float huntRadius;
     [SerializeField] private FishType fishType;
@@ -19,6 +20,7 @@ public class ScriptableFish : ScriptableObject
     public float Speed => this.speed;
     public float BoostedSpeed => this.boostedSpeed;
     public float DefaultPrice => this.defaultPrice;
+    public float DefaultWeight => this.defaultWeight;
     public float RoamRadius => this.roamRadius;
     public float HuntRadius => this.huntRadius;
     public FishType FishTypeCurrent => this.fishType;
