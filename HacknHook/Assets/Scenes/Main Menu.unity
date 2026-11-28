@@ -1323,7 +1323,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1761334834}
         m_TargetAssemblyTypeName: ButtonClick, Assembly-CSharp
-        m_MethodName: ButtonLoadClick
+        m_MethodName: ButtonSaveClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
