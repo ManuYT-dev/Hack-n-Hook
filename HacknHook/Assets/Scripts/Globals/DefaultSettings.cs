@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public static class DefaultSettings
 {
     public static (int, int) max_chunk;

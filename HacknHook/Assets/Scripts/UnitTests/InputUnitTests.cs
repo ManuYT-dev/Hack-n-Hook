@@ -35,6 +35,7 @@ public class InputUnitTests : MonoBehaviour
         var prevEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
 
         InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
 
         List<InputDevice> disabledRealDevices = new();
         foreach (InputDevice dev in InputSystem.devices)
@@ -90,12 +91,14 @@ public class InputUnitTests : MonoBehaviour
             Controlls.inputActions.Enable();
             InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
             Controlls.fishingRodActions.Aim.Reset();
+            Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
 
             this.RunKeyboardAndMouseTests(vMouse, vKeyboard);
             ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
             InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
             Controlls.fishingRodActions.Aim.Reset();
+            Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
             this.RunGamepadTests(vGamepad);
         }
@@ -103,13 +106,23 @@ public class InputUnitTests : MonoBehaviour
         {
             ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
             Controlls.inputActions.Disable();
-            Controlls.inputActions.devices = previousDevices;
+            Controlls.inputActions.devices = HasUnaddedDevice(previousDevices) ? null : previousDevices;
             Controlls.inputActions.Enable();
             InputSystem.RemoveDevice(vMouse);
             InputSystem.RemoveDevice(vKeyboard);
             InputSystem.RemoveDevice(vGamepad);
             InputSystem.Update();
         }
+    }
+
+    private static bool HasUnaddedDevice(ReadOnlyArray<InputDevice>? devices)
+    {
+        if (!devices.HasValue) return false;
+        foreach (InputDevice dev in devices.Value)
+        {
+            if (dev == null || !dev.added) return true;
+        }
+        return false;
     }
 
     private void RunKeyboardAndMouseTests(Mouse mouse, Keyboard keyboard)
@@ -132,10 +145,13 @@ public class InputUnitTests : MonoBehaviour
             () => SendMouse(mouse, new MouseState { position = Vector2.zero }),
             randomPos, 0.01f);
 
-        this.TestKeyButton("Key.Space -> FishingRod.Strike", rod.Strike, keyboard, Key.Space);
-        this.TestKeyButton("Key.LeftShift -> FishingRod.Slack", rod.Slack, keyboard, Key.LeftShift);
         this.TestKeyButton("Key.C -> FishingRod.CancelCast", rod.CancelCast, keyboard, Key.C);
         this.TestKeyButton("Key.Q -> FishingRod.SwitchBait", rod.SwitchBait, keyboard, Key.Q);
+        this.TestKeyButton("Key.X -> FishingRod.ToggleReady", rod.ToggleReady, keyboard, Key.X);
+        this.TestAxis("Mouse.Delta.X -> FishingRod.CastSpeed", rod.CastSpeed,
+            () => SendMouse(mouse, new MouseState { delta = new Vector2(100f, 0f) }),
+            () => SendMouse(mouse, new MouseState { delta = Vector2.zero }),
+            v => Mathf.Approximately(v, 2f));
 
         this.TestAxis("Key.A -> Boat.Drive (-1)", boat.Drive,
             () => SendKeyboard(keyboard, new KeyboardState(Key.A)),
@@ -178,10 +194,6 @@ public class InputUnitTests : MonoBehaviour
             () => SendGamepad(gamepad, new GamepadState()),
             null, 0f, actual => actual.sqrMagnitude > 0.01f);
 
-        this.TestGamepadButton("Gamepad.West -> FishingRod.Strike", rod.Strike, gamepad, GamepadButton.West);
-        this.TestButton("Gamepad.LeftTrigger -> FishingRod.Slack", rod.Slack,
-            () => SendGamepad(gamepad, new GamepadState { leftTrigger = 1f }),
-            () => SendGamepad(gamepad, new GamepadState()));
         this.TestGamepadButton("Gamepad.East -> FishingRod.CancelCast", rod.CancelCast, gamepad, GamepadButton.East);
         this.TestGamepadButton("Gamepad.DpadRight -> FishingRod.SwitchBait", rod.SwitchBait, gamepad, GamepadButton.DpadRight);
 
@@ -239,6 +251,7 @@ public class InputUnitTests : MonoBehaviour
             Controlls.inputActions.devices = new ReadOnlyArray<InputDevice>(new InputDevice[] { ble });
             Controlls.inputActions.Enable();
             Controlls.fishingRodActions.Aim.Reset();
+            Controlls.fishingRodActions.CastSpeed.Reset();
             InputSystem.Update();
 
             this.RunBleTests(ble);
@@ -262,10 +275,10 @@ public class InputUnitTests : MonoBehaviour
         this.TestBleButton("BLE FishingRod.Rell", rod.Rell, ble, 1, 0, d => d.rell);
         this.TestBleButton("BLE FishingRod.Throw", rod.Throw, ble, 1, 1, d => d.throwButton);
         this.TestBleAim(ble, rod.Aim);
-        this.TestBleButton("BLE FishingRod.Strike", rod.Strike, ble, 1, 3, d => d.strike);
-        this.TestBleButton("BLE FishingRod.Slack", rod.Slack, ble, 1, 4, d => d.slack);
         this.TestBleButton("BLE FishingRod.CancelCast", rod.CancelCast, ble, 1, 5, d => d.cancelCast);
         this.TestBleButton("BLE FishingRod.SwitchBait", rod.SwitchBait, ble, 1, 6, d => d.switchBait);
+        this.TestBleButton("BLE FishingRod.ToggleReady", rod.ToggleReady, ble, 1, 7, d => d.toggleReady);
+        this.TestBleCastSpeed(ble, rod.CastSpeed);
 
         this.TestBleDrive(ble, boat.Drive);
         this.TestBleButton("BLE Boat.Anchor", boat.Anchor, ble, 2, 1, d => d.anchor);
@@ -309,28 +322,35 @@ public class InputUnitTests : MonoBehaviour
             new Vector2(-1f, -1f), 0.001f);
     }
 
-    private void TestBleDrive(BleControllerDevice ble, InputAction driveAction)
+    private void TestBleCastSpeed(BleControllerDevice ble, InputAction castSpeedAction) =>
+        this.TestBle1DAxis("BLE FishingRod.CastSpeed", ble, castSpeedAction, 1, 8);
+
+    private void TestBleDrive(BleControllerDevice ble, InputAction driveAction) =>
+        this.TestBle1DAxis("BLE Boat.Drive", ble, driveAction, 2, 0);
+
+    private void TestBle1DAxis(string labelPrefix, BleControllerDevice ble, InputAction axisAction, byte map, byte actionId)
     {
         short r = this.RandomNonZeroInt16();
         float expected = r / 32767f;
 
-        this.TestAxis($"BLE Boat.Drive random ({r})", driveAction,
-            () => ble.ApplyPacket(Make1DPacket(2, 0, r), 3),
-            () => ble.ApplyPacket(Make1DPacket(2, 0, 0), 3),
+        this.TestAxis($"{labelPrefix} random ({r})", axisAction,
+            () => ble.ApplyPacket(Make1DPacket(map, actionId, r), 3),
+            () => ble.ApplyPacket(Make1DPacket(map, actionId, 0), 3),
             v => Mathf.Abs(v - expected) < 0.001f);
 
-        this.TestAxis("BLE Boat.Drive min clamp (-32768)", driveAction,
-            () => ble.ApplyPacket(Make1DPacket(2, 0, short.MinValue), 3),
-            () => ble.ApplyPacket(Make1DPacket(2, 0, 0), 3),
+        this.TestAxis($"{labelPrefix} min clamp (-32768)", axisAction,
+            () => ble.ApplyPacket(Make1DPacket(map, actionId, short.MinValue), 3),
+            () => ble.ApplyPacket(Make1DPacket(map, actionId, 0), 3),
             v => Mathf.Approximately(v, -1f));
     }
 
     private static void ResetBluetoothDevice(BleControllerDevice ble)
     {
-        for (byte actionId = 0; actionId <= 6; actionId++)
+        for (byte actionId = 0; actionId <= 8; actionId++)
         {
             if (actionId == 2) ble.ApplyPacket(Make2DPacket(1, 2, 0, 0), 5);
-            else ble.ApplyPacket(MakeButtonPacket(false, 1, actionId), 1);
+            else if (actionId == 8) ble.ApplyPacket(Make1DPacket(1, 8, 0), 3);
+            else if (actionId != 3 && actionId != 4) ble.ApplyPacket(MakeButtonPacket(false, 1, actionId), 1);
         }
         ble.ApplyPacket(Make1DPacket(2, 0, 0), 3);
         for (byte actionId = 1; actionId <= 4; actionId++)
@@ -471,7 +491,7 @@ public class InputUnitTests : MonoBehaviour
 
     private void OnGUI()
     {
-        float colWidth = Mathf.Max(180f, (Screen.width - 64f) / 3f);
+        float colWidth = Mathf.Max(180f, (Screen.width - 80f) / 4f);
         GUILayout.BeginArea(new Rect(16f, 16f, colWidth, Screen.height - 32f));
         GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold };
         headerStyle.normal.textColor = this._failed == 0 ? Color.green : Color.red;

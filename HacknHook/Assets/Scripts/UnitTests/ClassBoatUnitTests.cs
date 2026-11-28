@@ -34,7 +34,7 @@ public class ClassBoatUnitTests : MonoBehaviour
 
     private void OnGUI()
     {
-        float colWidth = Mathf.Max(180f, (Screen.width - 64f) / 3f);
+        float colWidth = Mathf.Max(180f, (Screen.width - 80f) / 4f);
         float x = 16f + colWidth + 16f;
         GUILayout.BeginArea(new Rect(x, 16f, colWidth, Screen.height - 32f));
         GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold };
@@ -768,7 +768,7 @@ public class ClassBoatUnitTests : MonoBehaviour
     #region Boundary & MaxDistance Tests
     private void RunBoundaryAndMaxDistanceTests(Keyboard keyboard)
     {
-        // 20. Left boundary clamps position.x >= 0 and zeroes negative velocity
+        // 20. Left boundary clamps position.x >= MAX_LEFT (-3520) and zeroes negative velocity
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("LeftClampBoat");
@@ -777,21 +777,21 @@ public class ClassBoatUnitTests : MonoBehaviour
 
             SendKeyboard(keyboard, new KeyboardState(Key.A));
             InputSystem.Update();
-            boat.StepMovement(0.1f); // would move left past 0
+            boat.StepMovement(0.1f); // would move left past -3520
 
             bool ok =
-                Mathf.Approximately(boat.transform.position.x, 0f) &&
+                Mathf.Approximately(boat.transform.position.x, -3520f) &&
                 Mathf.Approximately(boat.CurrentVelocity, 0f) &&
                 Mathf.Approximately(boat.DistanceFromOrigin, 0f);
 
             SendKeyboard(keyboard, new KeyboardState());
             InputSystem.Update();
 
-            this.Record("Left boundary clamps X >= 0 and zeroes negative velocity", ok,
+            this.Record("Left boundary clamps X >= MAX_LEFT and zeroes negative velocity", ok,
                 $"x={boat.transform.position.x}, vel={boat.CurrentVelocity}");
         });
 
-        // 21. MaxDistance clamps X, zeroes velocity, sets IsAtMaxDistance, fires OnMaxDistanceReached once per arrival
+        // 21. Right boundary (MAX_RIGHT = 12350) clamps X, zeroes velocity, sets IsAtMaxDistance, fires OnMaxDistanceReached once per arrival
         this.RunIsolated(() =>
         {
             ClassBoat boat = this.CreateBoat("MaxDistBoat");
@@ -803,12 +803,12 @@ public class ClassBoatUnitTests : MonoBehaviour
 
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
-            boat.StepMovement(0.1f); // hits 10
+            boat.StepMovement(0.1f); // hits 12350
             bool firstHit =
-                Mathf.Approximately(boat.transform.position.x, 10f) &&
+                Mathf.Approximately(boat.transform.position.x, 12350f) &&
                 Mathf.Approximately(boat.CurrentVelocity, 0f) &&
                 boat.IsAtMaxDistance &&
-                Mathf.Approximately(boat.DistanceFromOrigin, 10f) &&
+                Mathf.Approximately(boat.DistanceFromOrigin, 12350f) &&
                 maxDistEvents == 1;
 
             // Stepping again at boundary must not re-fire OnMaxDistanceReached
@@ -819,9 +819,9 @@ public class ClassBoatUnitTests : MonoBehaviour
             SendKeyboard(keyboard, new KeyboardState(Key.A));
             InputSystem.Update();
             boat.StepMovement(0.1f);
-            bool cleared = !boat.IsAtMaxDistance && boat.transform.position.x < 10f;
+            bool cleared = !boat.IsAtMaxDistance && boat.transform.position.x < 12350f;
 
-            // Reach maxDistance again -> fires second time
+            // Reach MAX_RIGHT again -> fires second time
             SendKeyboard(keyboard, new KeyboardState(Key.D));
             InputSystem.Update();
             boat.StepMovement(0.2f);
@@ -831,7 +831,7 @@ public class ClassBoatUnitTests : MonoBehaviour
             SendKeyboard(keyboard, new KeyboardState());
             InputSystem.Update();
 
-            this.Record("MaxDistance clamps X, zeroes velocity, toggles IsAtMaxDistance, fires OnMaxDistanceReached once per arrival",
+            this.Record("MAX_RIGHT clamps X, zeroes velocity, toggles IsAtMaxDistance, fires OnMaxDistanceReached once per arrival",
                 firstHit && noRepeat && cleared && secondHit,
                 $"firstHit={firstHit}, noRepeat={noRepeat}, cleared={cleared}, secondHit={secondHit}, events={maxDistEvents}");
         });

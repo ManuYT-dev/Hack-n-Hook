@@ -649,26 +649,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""priority"": 0
                 },
                 {
-                    ""name"": ""Strike"",
-                    ""type"": ""Button"",
-                    ""id"": ""27ec973e-cf5a-42fa-b7a6-6d728134477c"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false,
-                    ""priority"": 0
-                },
-                {
-                    ""name"": ""Slack"",
-                    ""type"": ""Button"",
-                    ""id"": ""4a4a3681-fce9-4130-abd4-fffd82ed8268"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false,
-                    ""priority"": 0
-                },
-                {
                     ""name"": ""CancelCast"",
                     ""type"": ""Button"",
                     ""id"": ""71451d19-8471-4675-8321-571afd545866"",
@@ -686,6 +666,26 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""ToggleReady"",
+                    ""type"": ""Button"",
+                    ""id"": ""a19fe797-f27a-4c99-9257-ba3ba6fbeba2"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""CastSpeed"",
+                    ""type"": ""Value"",
+                    ""id"": ""7597d035-b9b2-4953-9863-40959c5c3b0f"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
                     ""priority"": 0
                 }
             ],
@@ -753,50 +753,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Aim"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""1370763e-53ec-4ebc-9dcd-dcfbbe3e5704"",
-                    ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Strike"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""8c2da59b-2847-4bad-94cf-5292f7cd6014"",
-                    ""path"": ""<Gamepad>/buttonWest"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Gamepad"",
-                    ""action"": ""Strike"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""47ebd01e-3b8a-4072-8d5c-895ed8dbba63"",
-                    ""path"": ""<Keyboard>/leftShift"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Slack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c48ee6e4-268d-4aca-8257-546354f93a41"",
-                    ""path"": ""<Gamepad>/leftTrigger"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Gamepad"",
-                    ""action"": ""Slack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -879,28 +835,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""6403d545-adcb-4187-81ea-f12d64ad9f2f"",
-                    ""path"": ""<BleControllerDevice>/strike"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Strike"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""4f66ee2a-451d-4b93-9f5d-87fe10be7d8e"",
-                    ""path"": ""<BleControllerDevice>/slack"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""BleController"",
-                    ""action"": ""Slack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""60a88fbf-ff43-43fe-8696-b8a806893295"",
                     ""path"": ""<BleControllerDevice>/cancelCast"",
                     ""interactions"": """",
@@ -918,6 +852,50 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""BleController"",
                     ""action"": ""SwitchBait"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""120cb091-bee7-47ac-9799-5ad6008bab80"",
+                    ""path"": ""<Keyboard>/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""ToggleReady"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7878fdb2-265d-4d65-9f84-534c57dfd229"",
+                    ""path"": ""<BleControllerDevice>/toggleReady"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""BleController"",
+                    ""action"": ""ToggleReady"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e6b51779-4da1-4745-a6ee-0dffb86fb354"",
+                    ""path"": ""<Mouse>/delta/x"",
+                    ""interactions"": """",
+                    ""processors"": ""scale(factor=0.02)"",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""CastSpeed"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7831075b-8819-4181-a294-6949df1d9ab7"",
+                    ""path"": ""<BleControllerDevice>/castSpeed"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""BleController"",
+                    ""action"": ""CastSpeed"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1366,10 +1344,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_FishingRod_Rell = m_FishingRod.FindAction("Rell", throwIfNotFound: true);
         m_FishingRod_Throw = m_FishingRod.FindAction("Throw", throwIfNotFound: true);
         m_FishingRod_Aim = m_FishingRod.FindAction("Aim", throwIfNotFound: true);
-        m_FishingRod_Strike = m_FishingRod.FindAction("Strike", throwIfNotFound: true);
-        m_FishingRod_Slack = m_FishingRod.FindAction("Slack", throwIfNotFound: true);
         m_FishingRod_CancelCast = m_FishingRod.FindAction("CancelCast", throwIfNotFound: true);
         m_FishingRod_SwitchBait = m_FishingRod.FindAction("SwitchBait", throwIfNotFound: true);
+        m_FishingRod_ToggleReady = m_FishingRod.FindAction("ToggleReady", throwIfNotFound: true);
+        m_FishingRod_CastSpeed = m_FishingRod.FindAction("CastSpeed", throwIfNotFound: true);
         // Boat
         m_Boat = asset.FindActionMap("Boat", throwIfNotFound: true);
         m_Boat_Drive = m_Boat.FindAction("Drive", throwIfNotFound: true);
@@ -1661,10 +1639,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_FishingRod_Rell;
     private readonly InputAction m_FishingRod_Throw;
     private readonly InputAction m_FishingRod_Aim;
-    private readonly InputAction m_FishingRod_Strike;
-    private readonly InputAction m_FishingRod_Slack;
     private readonly InputAction m_FishingRod_CancelCast;
     private readonly InputAction m_FishingRod_SwitchBait;
+    private readonly InputAction m_FishingRod_ToggleReady;
+    private readonly InputAction m_FishingRod_CastSpeed;
     /// <summary>
     /// Provides access to input actions defined in input action map "FishingRod".
     /// </summary>
@@ -1689,14 +1667,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Aim => m_Wrapper.m_FishingRod_Aim;
         /// <summary>
-        /// Provides access to the underlying input action "FishingRod/Strike".
-        /// </summary>
-        public InputAction @Strike => m_Wrapper.m_FishingRod_Strike;
-        /// <summary>
-        /// Provides access to the underlying input action "FishingRod/Slack".
-        /// </summary>
-        public InputAction @Slack => m_Wrapper.m_FishingRod_Slack;
-        /// <summary>
         /// Provides access to the underlying input action "FishingRod/CancelCast".
         /// </summary>
         public InputAction @CancelCast => m_Wrapper.m_FishingRod_CancelCast;
@@ -1704,6 +1674,14 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "FishingRod/SwitchBait".
         /// </summary>
         public InputAction @SwitchBait => m_Wrapper.m_FishingRod_SwitchBait;
+        /// <summary>
+        /// Provides access to the underlying input action "FishingRod/ToggleReady".
+        /// </summary>
+        public InputAction @ToggleReady => m_Wrapper.m_FishingRod_ToggleReady;
+        /// <summary>
+        /// Provides access to the underlying input action "FishingRod/CastSpeed".
+        /// </summary>
+        public InputAction @CastSpeed => m_Wrapper.m_FishingRod_CastSpeed;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1739,18 +1717,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Aim.started += instance.OnAim;
             @Aim.performed += instance.OnAim;
             @Aim.canceled += instance.OnAim;
-            @Strike.started += instance.OnStrike;
-            @Strike.performed += instance.OnStrike;
-            @Strike.canceled += instance.OnStrike;
-            @Slack.started += instance.OnSlack;
-            @Slack.performed += instance.OnSlack;
-            @Slack.canceled += instance.OnSlack;
             @CancelCast.started += instance.OnCancelCast;
             @CancelCast.performed += instance.OnCancelCast;
             @CancelCast.canceled += instance.OnCancelCast;
             @SwitchBait.started += instance.OnSwitchBait;
             @SwitchBait.performed += instance.OnSwitchBait;
             @SwitchBait.canceled += instance.OnSwitchBait;
+            @ToggleReady.started += instance.OnToggleReady;
+            @ToggleReady.performed += instance.OnToggleReady;
+            @ToggleReady.canceled += instance.OnToggleReady;
+            @CastSpeed.started += instance.OnCastSpeed;
+            @CastSpeed.performed += instance.OnCastSpeed;
+            @CastSpeed.canceled += instance.OnCastSpeed;
         }
 
         /// <summary>
@@ -1771,18 +1749,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Aim.started -= instance.OnAim;
             @Aim.performed -= instance.OnAim;
             @Aim.canceled -= instance.OnAim;
-            @Strike.started -= instance.OnStrike;
-            @Strike.performed -= instance.OnStrike;
-            @Strike.canceled -= instance.OnStrike;
-            @Slack.started -= instance.OnSlack;
-            @Slack.performed -= instance.OnSlack;
-            @Slack.canceled -= instance.OnSlack;
             @CancelCast.started -= instance.OnCancelCast;
             @CancelCast.performed -= instance.OnCancelCast;
             @CancelCast.canceled -= instance.OnCancelCast;
             @SwitchBait.started -= instance.OnSwitchBait;
             @SwitchBait.performed -= instance.OnSwitchBait;
             @SwitchBait.canceled -= instance.OnSwitchBait;
+            @ToggleReady.started -= instance.OnToggleReady;
+            @ToggleReady.performed -= instance.OnToggleReady;
+            @ToggleReady.canceled -= instance.OnToggleReady;
+            @CastSpeed.started -= instance.OnCastSpeed;
+            @CastSpeed.performed -= instance.OnCastSpeed;
+            @CastSpeed.canceled -= instance.OnCastSpeed;
         }
 
         /// <summary>
@@ -2237,20 +2215,6 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnAim(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Strike" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnStrike(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "Slack" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnSlack(InputAction.CallbackContext context);
-        /// <summary>
         /// Method invoked when associated input action "CancelCast" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -2264,6 +2228,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSwitchBait(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ToggleReady" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleReady(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CastSpeed" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCastSpeed(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Boat" which allows adding and removing callbacks.

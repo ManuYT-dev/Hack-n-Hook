@@ -22,7 +22,7 @@ public class GlobalsSaveUnitTests : MonoBehaviour
 
     private void OnGUI()
     {
-        float colWidth = Mathf.Max(180f, (Screen.width - 64f) / 3f);
+        float colWidth = Mathf.Max(180f, (Screen.width - 80f) / 4f);
         float x = 16f + (colWidth + 16f) * 2f;
         GUILayout.BeginArea(new Rect(x, 16f, colWidth, Screen.height - 32f));
         GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold };
