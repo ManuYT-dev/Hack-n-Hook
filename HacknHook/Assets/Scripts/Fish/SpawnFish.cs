@@ -194,7 +194,11 @@ public class SpawnFish : MonoBehaviour
         {
             for (int i = 0; i < config.spawnCount; i++)
             {
-                Vector3 randomPosition = GetRandomPositionInBounds(bounds, chunkTransform.position);
+                Vector3 randomPosition = GetRandomPositionInBounds(
+                    bounds,
+                    chunkTransform.position,
+                    row == 1
+                );
                 SpawnFishAtPosition(randomPosition, config.fishType, chunkTransform);
             }
             Debug.Log($"  - {config.fishType}: {config.spawnCount} Stück");
@@ -211,10 +215,22 @@ public class SpawnFish : MonoBehaviour
         return bounds;
     }
 
-    private static Vector3 GetRandomPositionInBounds(Bounds bounds, Vector3 chunkCenter)
+    private static Vector3 GetRandomPositionInBounds(Bounds bounds, Vector3 chunkCenter, bool bottomThreeQuarters)
     {
-        float randomX = Random.Range(chunkCenter.x - CHUNK_WIDTH / 2f, chunkCenter.x + CHUNK_WIDTH / 2f);
-        float randomY = Random.Range(chunkCenter.y - CHUNK_HEIGHT / 2f, chunkCenter.y + CHUNK_HEIGHT / 2f);
+        float minX = chunkCenter.x - CHUNK_WIDTH / 2f;
+        float maxX = chunkCenter.x + CHUNK_WIDTH / 2f;
+
+        float minY = chunkCenter.y - CHUNK_HEIGHT / 2f;
+        float maxY = chunkCenter.y + CHUNK_HEIGHT / 2f;
+
+        if (bottomThreeQuarters)
+        {
+            // Oberes Viertel ausschließen
+            maxY = minY + CHUNK_HEIGHT * 0.75f;
+        }
+
+        float randomX = Random.Range(minX, maxX);
+        float randomY = Random.Range(minY, maxY);
 
         return new Vector3(randomX, randomY, chunkCenter.z);
     }

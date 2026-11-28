@@ -1,6 +1,8 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public interface IInteractable
 {
@@ -9,6 +11,11 @@ public interface IInteractable
 
 public class ClassBoat : MonoBehaviour
 {
+    #region Hardcoded Boundaries
+    private float MAX_LEFT = -3520f;
+    private float MAX_RIGHT = 12350f;
+    #endregion
+
     #region Inspector Fields
     [Header("Boat Data")]
     [SerializeField] private ScriptableBoat boatData;
@@ -25,6 +32,7 @@ public class ClassBoat : MonoBehaviour
 
     [Header("Components & Settings")]
     [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Image boatImage;
     [SerializeField] private Transform visualTransform;
     [SerializeField] private bool facesLeftByDefault;
     [SerializeField] private float inputDeadzone = 0.05f;
@@ -42,6 +50,7 @@ public class ClassBoat : MonoBehaviour
     private bool isBoosting;
     private bool initialized;
     private bool isQuitting;
+    private Vector3 spawnPosition;
     #endregion
 
     #region Events
@@ -76,6 +85,9 @@ public class ClassBoat : MonoBehaviour
     private void Awake()
     {
         this.ResolveVisualComponents();
+        
+        // Speichere die Spawn-Position beim Awake
+        this.spawnPosition = this.transform.position;
 
         if (this.boatData != null && !this.initialized)
         {
@@ -100,6 +112,14 @@ public class ClassBoat : MonoBehaviour
 
     private void Start()
     {
+        (int x, int y) = DefaultSettings.max_chunk;
+        if (y == 1)
+            this.MAX_RIGHT = 1000f;
+        else if (y == 2)
+            this.MAX_RIGHT = 6550f;
+        else if (y == 2)
+            this.MAX_RIGHT = 12350f;
+
         if (!this.initialized && this.boatData == null)
         {
             Debug.LogWarning($"[ClassBoat.Start] {this.gameObject.name} has no ScriptableBoat assigned; using inspector values.");
@@ -325,6 +345,17 @@ public class ClassBoat : MonoBehaviour
 
     private void ResolveVisualComponents()
     {
+        // Zuerst versuchen Image zu finden
+        if (this.boatImage == null)
+        {
+            this.boatImage = this.GetComponent<Image>();
+            if (this.boatImage == null)
+            {
+                this.boatImage = this.GetComponentInChildren<Image>(true);
+            }
+        }
+
+        // Dann SpriteRenderer versuchen
         if (this.spriteRenderer == null)
         {
             this.spriteRenderer = this.GetComponent<SpriteRenderer>();
@@ -336,14 +367,29 @@ public class ClassBoat : MonoBehaviour
 
         if (this.visualTransform == null)
         {
-            this.visualTransform = this.spriteRenderer != null ? this.spriteRenderer.transform : this.transform;
+            if (this.boatImage != null)
+            {
+                this.visualTransform = this.boatImage.transform;
+            }
+            else if (this.spriteRenderer != null)
+            {
+                this.visualTransform = this.spriteRenderer.transform;
+            }
+            else
+            {
+                this.visualTransform = this.transform;
+            }
         }
         this.interactLayerMask = (1 << LayerMask.NameToLayer("Interactable"));
     }
 
     private void ApplySprite()
     {
-        if (this.spriteRenderer != null && this.sprite != null)
+        if (this.boatImage != null && this.sprite != null)
+        {
+            this.boatImage.sprite = this.sprite;
+        }
+        else if (this.spriteRenderer != null && this.sprite != null)
         {
             this.spriteRenderer.sprite = this.sprite;
         }
@@ -389,6 +435,16 @@ public class ClassBoat : MonoBehaviour
     {
         Transform target = this.visualTransform != null ? this.visualTransform : this.transform;
 
+        // Für Image Components: scale.x verwenden für Flip-Effekt
+        if (this.boatImage != null)
+        {
+            Vector3 scale = target.localScale;
+            scale.x = this.currentYawAngle > 90f ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
+            target.localScale = scale;
+            return;
+        }
+
+        // Für SpriteRenderer: flipX verwenden
         if (target == this.transform && this.transform.childCount > 0)
         {
             if (this.spriteRenderer != null)
@@ -399,6 +455,7 @@ public class ClassBoat : MonoBehaviour
             return;
         }
 
+        // Fallback: Rotation verwenden
         Quaternion rotation = Quaternion.Euler(0f, this.currentYawAngle, 0f);
 
         if (target == this.transform)
@@ -416,38 +473,28 @@ public class ClassBoat : MonoBehaviour
         Vector3 position = this.transform.position;
         position.x += this.currentVelocity * deltaTime;
 
-        if (position.x <= 0f)
+        // Verwende hardcodierte Grenzen statt Konstanten
+        if (position.x <= MAX_LEFT)
         {
-            position.x = 0f;
+            position.x = MAX_LEFT;
             if (this.currentVelocity < 0f)
             {
                 this.currentVelocity = 0f;
             }
         }
 
-        if (this.maxDistance > 0)
+        if (position.x >= MAX_RIGHT)
         {
-            bool hitMaxDistance = false;
-
-            if (position.x >= this.maxDistance)
+            position.x = MAX_RIGHT;
+            if (this.currentVelocity > 0f)
             {
-                position.x = this.maxDistance;
-                if (this.currentVelocity > 0f)
-                {
-                    this.currentVelocity = 0f;
-                }
-
-                hitMaxDistance = true;
+                this.currentVelocity = 0f;
             }
 
-            if (hitMaxDistance && !this.IsAtMaxDistance)
+            if (!this.IsAtMaxDistance)
             {
                 this.IsAtMaxDistance = true;
                 this.OnMaxDistanceReached?.Invoke();
-            }
-            else
-            {
-                this.IsAtMaxDistance = hitMaxDistance;
             }
         }
         else
