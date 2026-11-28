@@ -155,12 +155,12 @@ public class FishingRodVisuals
         this.stringLineRenderer.endColor = color;
     }
 
-    public void ApplyStringColor(StringType stringType)
+    public void ApplyStringColor(FishingLineType stringType)
     {
         Color color = stringType switch
         {
-            StringType.Cobweb => new Color(0.85f, 0.85f, 0.85f, 1f),
-            StringType.GoldString => new Color(1f, 0.84f, 0.2f, 1f),
+            FishingLineType.Level0 => new Color(0.85f, 0.85f, 0.85f, 1f),
+            FishingLineType.Level2 => new Color(1f, 0.84f, 0.2f, 1f),
             _ => Color.white
         };
 

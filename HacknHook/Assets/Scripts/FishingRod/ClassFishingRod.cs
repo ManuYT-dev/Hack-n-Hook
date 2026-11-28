@@ -234,7 +234,7 @@ public class ClassFishingRod : MonoBehaviour
     }
 
     public void SetStringColor(Color color) => this.visuals.SetStringColor(color);
-    public void ApplyStringColor(StringType stringType) => this.visuals.ApplyStringColor(stringType);
+    public void ApplyStringColor(FishingLineType stringType) => this.visuals.ApplyStringColor(stringType);
 
     public void SetEquippedString(ScriptableString stringData)
     {

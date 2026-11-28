@@ -168,7 +168,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             ClassFishingRod rod = this.CreateRod("ColorRod");
             LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
-            rod.ApplyStringColor(StringType.GoldString);
+            rod.ApplyStringColor(FishingLineType.Level2);
             Color goldExpected = new(1f, 0.84f, 0.2f, 1f);
             bool goldOk = ColorsApproxEqual(lineRenderer.startColor, goldExpected) && ColorsApproxEqual(lineRenderer.endColor, goldExpected);
 

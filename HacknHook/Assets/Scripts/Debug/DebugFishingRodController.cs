@@ -114,15 +114,15 @@ public class DebugFishingRodController : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Cobweb"))
         {
-            this.fishingRod.ApplyStringColor(StringType.Cobweb);
+            this.fishingRod.ApplyStringColor(FishingLineType.Level0);
         }
         if (GUILayout.Button("String"))
         {
-            this.fishingRod.ApplyStringColor(StringType.String);
+            this.fishingRod.ApplyStringColor(FishingLineType.Level1);
         }
         if (GUILayout.Button("Gold"))
         {
-            this.fishingRod.ApplyStringColor(StringType.GoldString);
+            this.fishingRod.ApplyStringColor(FishingLineType.Level2);
         }
         if (GUILayout.Button("Crimson"))
         {
