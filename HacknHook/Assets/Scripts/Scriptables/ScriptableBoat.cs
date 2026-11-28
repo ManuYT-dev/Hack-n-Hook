@@ -11,6 +11,8 @@ public class ScriptableBoat : ScriptableObject
     [SerializeField] private float turnSpeed;
     [SerializeField] private float defaultPrice;
     [SerializeField] private int maxCapacity;
+    [SerializeField] private float buyPrice;
+    [SerializeField] private int maxDistance;
     [SerializeField] private Sprite sprite;
     #endregion
 
@@ -22,6 +24,8 @@ public class ScriptableBoat : ScriptableObject
     public float TurnSpeed => this.turnSpeed;
     public float DefaultPrice => this.defaultPrice;
     public int MaxCapacity => this.maxCapacity;
+    public float BuyPrice => this.buyPrice;
+    public int MaxDistance => this.maxDistance;
     public Sprite SpriteBoat => this.sprite;
     #endregion
 }
