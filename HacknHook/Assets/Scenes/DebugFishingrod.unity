@@ -287,40 +287,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClassFishingRod
   rodOrigin: {fileID: 200000004}
-  hookTransform: {fileID: 0}
-  hookTipTransform: {fileID: 0}
-  hookTipLocalOffset: {x: 0, y: -0.2}
-  hookSpriteRenderer: {fileID: 0}
-  hookEmptySprite: {fileID: 0}
-  hookBaitedSprite: {fileID: 0}
-  hookFishSprite: {fileID: 0}
-  hookScale: {x: 200, y: 200, z: 1}
-  hookSortingLayerName: Default
-  hookSortingOrder: 15
-  hideHookWhenIdle: 1
-  readyHookOffset: {x: 0, y: -70}
+  visuals:
+    hookTransform: {fileID: 0}
+    hookTipTransform: {fileID: 0}
+    hookTipLocalOffset: {x: 0, y: -0.2}
+    hookSpriteRenderer: {fileID: 0}
+    hookEmptySprite: {fileID: 0}
+    hookBaitedSprite: {fileID: 0}
+    hookFishSprite: {fileID: 0}
+    hookScale: {x: 200, y: 200, z: 1}
+    hideHookWhenIdle: 1
+    readyHookOffset: {x: 0, y: -70}
+    stringLineRenderer: {fileID: 0}
+    stringColor: {r: 1, g: 1, b: 1, a: 1}
+    stringWidth: 4
+  physics:
+    minThrowSpeed: 0.25
+    maxThrowSpeed: 1
+    castSampleDuration: 0.15
+    onlyPositiveCastSpeed: 1
+    baseCastDistance: 240
+    airGravity: 600
+    waterSurfaceTransform: {fileID: 0}
+    waterSurfaceOffsetY: -70
+    waterHorizontalDrag: 4
+    waterSinkMultiplier: 0.25
+    reelSpeed: 500
+    reelCompleteDistance: 25
   equippedStringData: {fileID: 0}
-  stringLineRenderer: {fileID: 0}
-  stringColor: {r: 1, g: 1, b: 1, a: 1}
-  stringWidth: 4
-  stringSortingLayerName: Default
-  stringSortingOrder: 14
-  fallbackMaxDepth: 550
-  minThrowSpeed: 0.25
-  maxThrowSpeed: 1
-  castSampleDuration: 0.15
-  onlyPositiveCastSpeed: 1
-  baseCastDistance: 240
-  castAngleDegrees: 45
-  castTravelSpeed: 700
-  reelSpeed: 500
-  reelCompleteDistance: 25
-  destroyFishOnCatchComplete: 1
+  defaultMaxDepth: 550
   equippedBaitData: {fileID: 0}
-  fallbackBaitName: DebugWorm
-  fallbackBaitFallSpeed: 50
-  fallbackAttractRadius: 300
-  fallbackBaitWeight: 1
+  defaultBaitName: DebugWorm
+  defaultBaitFallSpeed: 50
+  defaultAttractRadius: 300
+  defaultBaitWeight: 1
+  destroyFishOnCatchComplete: 1
 --- !u!114 &200000003
 MonoBehaviour:
   m_ObjectHideFlags: 0

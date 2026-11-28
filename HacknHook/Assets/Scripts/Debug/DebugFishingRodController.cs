@@ -86,7 +86,7 @@ public class DebugFishingRodController : MonoBehaviour
             return;
         }
 
-        GUILayout.Label($"State: {this.fishingRod.CurrentState}");
+        GUILayout.Label($"State: {this.fishingRod.CurrentState} | InWater: {this.fishingRod.Physics.IsInWater}");
         GUILayout.Label($"Last Peak Speed: {this.fishingRod.LastPeakCastSpeed:F3} | Multiplier: {this.fishingRod.LastSpeedMultiplier:F2}x");
         GUILayout.Label($"Hooked Fish: {(this.fishingRod.HookedFish != null ? this.fishingRod.HookedFish.FishName : "None")}");
         GUILayout.Label($"Caught Count: {this.caughtCount} | Last: {this.lastCatchMessage}");

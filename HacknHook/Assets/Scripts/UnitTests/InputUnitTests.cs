@@ -35,6 +35,7 @@ public class InputUnitTests : MonoBehaviour
         var prevEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
 
         InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
 
         List<InputDevice> disabledRealDevices = new();
         foreach (InputDevice dev in InputSystem.devices)
@@ -105,13 +106,23 @@ public class InputUnitTests : MonoBehaviour
         {
             ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
             Controlls.inputActions.Disable();
-            Controlls.inputActions.devices = previousDevices;
+            Controlls.inputActions.devices = HasUnaddedDevice(previousDevices) ? null : previousDevices;
             Controlls.inputActions.Enable();
             InputSystem.RemoveDevice(vMouse);
             InputSystem.RemoveDevice(vKeyboard);
             InputSystem.RemoveDevice(vGamepad);
             InputSystem.Update();
         }
+    }
+
+    private static bool HasUnaddedDevice(ReadOnlyArray<InputDevice>? devices)
+    {
+        if (!devices.HasValue) return false;
+        foreach (InputDevice dev in devices.Value)
+        {
+            if (dev == null || !dev.added) return true;
+        }
+        return false;
     }
 
     private void RunKeyboardAndMouseTests(Mouse mouse, Keyboard keyboard)
