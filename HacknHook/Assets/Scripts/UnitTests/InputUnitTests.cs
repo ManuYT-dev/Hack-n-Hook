@@ -12,6 +12,7 @@ public class InputUnitTests : MonoBehaviour
     private readonly List<string> _results = new();
     private int _passed;
     private int _failed;
+    private Vector2 _scrollPos;
     private System.Random _rng;
 
     private IEnumerator Start()
@@ -34,7 +35,18 @@ public class InputUnitTests : MonoBehaviour
         var prevEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
 
         InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
-        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+
+        List<InputDevice> disabledRealDevices = new();
+        foreach (InputDevice dev in InputSystem.devices)
+        {
+            if (dev is not BleControllerDevice)
+            {
+                InputSystem.DisableDevice(dev);
+                InputSystem.ResetDevice(dev, alsoResetDontResetControls: true);
+                disabledRealDevices.Add(dev);
+            }
+        }
+        InputSystem.Update();
 
         try
         {
@@ -43,8 +55,17 @@ public class InputUnitTests : MonoBehaviour
         }
         finally
         {
+            foreach (InputDevice dev in disabledRealDevices)
+            {
+                if (dev.added)
+                {
+                    InputSystem.EnableDevice(dev);
+                }
+            }
+
             InputSystem.settings.backgroundBehavior = prevBg;
             InputSystem.settings.editorInputBehaviorInPlayMode = prevEditorInput;
+            InputSystem.Update();
         }
 
         string summary = $"[InputUnitTests] Finished: {this._passed} passed, {this._failed} failed.";
@@ -62,18 +83,28 @@ public class InputUnitTests : MonoBehaviour
 
         try
         {
+            Controlls.inputActions.Disable();
             Controlls.inputActions.devices = new ReadOnlyArray<InputDevice>(
                 new InputDevice[] { vMouse, vKeyboard, vGamepad }
             );
+            Controlls.inputActions.Enable();
+            InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Aim.Reset();
             InputSystem.Update();
 
             this.RunKeyboardAndMouseTests(vMouse, vKeyboard);
+            ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
+            InputSystem.ResetDevice(vMouse, alsoResetDontResetControls: true);
+            Controlls.fishingRodActions.Aim.Reset();
+            InputSystem.Update();
             this.RunGamepadTests(vGamepad);
         }
         finally
         {
             ResetLaptopDevices(vMouse, vKeyboard, vGamepad);
+            Controlls.inputActions.Disable();
             Controlls.inputActions.devices = previousDevices;
+            Controlls.inputActions.Enable();
             InputSystem.RemoveDevice(vMouse);
             InputSystem.RemoveDevice(vKeyboard);
             InputSystem.RemoveDevice(vGamepad);
@@ -204,7 +235,10 @@ public class InputUnitTests : MonoBehaviour
 
         try
         {
+            Controlls.inputActions.Disable();
             Controlls.inputActions.devices = new ReadOnlyArray<InputDevice>(new InputDevice[] { ble });
+            Controlls.inputActions.Enable();
+            Controlls.fishingRodActions.Aim.Reset();
             InputSystem.Update();
 
             this.RunBleTests(ble);
@@ -212,7 +246,9 @@ public class InputUnitTests : MonoBehaviour
         finally
         {
             ResetBluetoothDevice(ble);
+            Controlls.inputActions.Disable();
             Controlls.inputActions.devices = previousDevices;
+            Controlls.inputActions.Enable();
             InputSystem.Update();
         }
     }
@@ -435,12 +471,15 @@ public class InputUnitTests : MonoBehaviour
 
     private void OnGUI()
     {
-        GUILayout.BeginArea(new Rect(16, 16, Screen.width - 32, Screen.height - 32));
-        GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
+        float colWidth = Mathf.Max(180f, (Screen.width - 64f) / 3f);
+        GUILayout.BeginArea(new Rect(16f, 16f, colWidth, Screen.height - 32f));
+        GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold };
         headerStyle.normal.textColor = this._failed == 0 ? Color.green : Color.red;
-        GUILayout.Label($"Input Unit Tests: {this._passed} passed, {this._failed} failed", headerStyle);
+        GUILayout.Label($"Input: {this._passed} passed, {this._failed} failed", headerStyle);
+        this._scrollPos = GUILayout.BeginScrollView(this._scrollPos);
         foreach (string line in this._results)
             GUILayout.Label(line);
+        GUILayout.EndScrollView();
         GUILayout.EndArea();
     }
 

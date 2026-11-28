@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,9 +9,9 @@ public class SpawnFish : MonoBehaviour
     private const float CHUNK_WIDTH = 5760f;
     private const float CHUNK_HEIGHT = 3240f;
     private const int FISH_PER_CHUNK = 10;
-    
-    private static readonly System.Collections.Generic.Dictionary<string, FishSpawnConfig[]> ChunkConfigs = 
-        new System.Collections.Generic.Dictionary<string, FishSpawnConfig[]>();
+
+    private static readonly Dictionary<string, FishSpawnConfig[]> ChunkConfigs =
+        new Dictionary<string, FishSpawnConfig[]>();
 
     private class FishSpawnConfig
     {
@@ -20,26 +21,26 @@ public class SpawnFish : MonoBehaviour
 
     private void OnEnable()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneLoaded += this.OnSceneLoaded;
     }
 
     private void OnDisable()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded -= this.OnSceneLoaded;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "Game")
         {
-            Start();
+            this.Start();
         }
     }
 
     public void Start()
     {
         InitializeChunkConfigs();
-        
+
         GameObject chunksContainer = GameObject.Find(CHUNKS_CONTAINER_NAME);
         if (chunksContainer == null)
         {
@@ -88,21 +89,21 @@ public class SpawnFish : MonoBehaviour
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 1 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 1 }
         };
-        
+
         ChunkConfigs["1_2"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 8 },
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 1 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 1 }
         };
-        
+
         ChunkConfigs["1_3"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 8 },
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 1 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 1 }
         };
-        
+
         // Row 2: Mischung mit mehr Hechten und Forellen (2 Barsche, 4 Forellen, 4 Hechte)
         ChunkConfigs["2_1"] = new FishSpawnConfig[]
         {
@@ -110,21 +111,21 @@ public class SpawnFish : MonoBehaviour
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 4 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 4 }
         };
-        
+
         ChunkConfigs["2_2"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 2 },
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 4 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 4 }
         };
-        
+
         ChunkConfigs["2_3"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 2 },
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 4 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 4 }
         };
-        
+
         // Row 3: Viele Hechte und Forellen, wenig Barsche (1 Barsch, 4 Forellen, 5 Hechte)
         ChunkConfigs["3_1"] = new FishSpawnConfig[]
         {
@@ -132,14 +133,14 @@ public class SpawnFish : MonoBehaviour
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 4 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 5 }
         };
-        
+
         ChunkConfigs["3_2"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 1 },
             new FishSpawnConfig { fishType = FishType.Forelle, spawnCount = 4 },
             new FishSpawnConfig { fishType = FishType.Hecht, spawnCount = 5 }
         };
-        
+
         ChunkConfigs["3_3"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 1 },
@@ -167,7 +168,7 @@ public class SpawnFish : MonoBehaviour
     {
         bool isValid = row >= 1 &&
                column >= 1 &&
-               row <= DefaultSettings.max_chunk.Item1 && 
+               row <= DefaultSettings.max_chunk.Item1 &&
                column <= DefaultSettings.max_chunk.Item2;
 
         return isValid;
@@ -176,7 +177,7 @@ public class SpawnFish : MonoBehaviour
     private static void SpawnFishesInChunk(Transform chunkTransform, int row, int column)
     {
         string configKey = $"{row}_{column}";
-        
+
         if (!ChunkConfigs.ContainsKey(configKey))
         {
             Debug.LogWarning($"[SpawnFishesInChunk] Keine Konfiguration für {configKey}");
@@ -184,7 +185,7 @@ public class SpawnFish : MonoBehaviour
         }
 
         FishSpawnConfig[] configs = ChunkConfigs[configKey];
-        
+
         Bounds bounds = GetChunkBounds(chunkTransform);
 
         Debug.Log($"[SpawnFishesInChunk] Spawne Fische in {configKey}:");
@@ -204,9 +205,9 @@ public class SpawnFish : MonoBehaviour
     {
         Vector3 chunkCenter = chunkTransform.position;
         Vector3 chunkSize = new Vector3(CHUNK_WIDTH, CHUNK_HEIGHT, 0f);
-        
+
         Bounds bounds = new Bounds(chunkCenter, chunkSize);
-        
+
         return bounds;
     }
 
@@ -214,7 +215,7 @@ public class SpawnFish : MonoBehaviour
     {
         float randomX = Random.Range(chunkCenter.x - CHUNK_WIDTH / 2f, chunkCenter.x + CHUNK_WIDTH / 2f);
         float randomY = Random.Range(chunkCenter.y - CHUNK_HEIGHT / 2f, chunkCenter.y + CHUNK_HEIGHT / 2f);
-        
+
         return new Vector3(randomX, randomY, chunkCenter.z);
     }
 
