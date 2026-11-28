@@ -213,7 +213,7 @@ public class FishingHookPhysics
         hookTransform.position = pos;
     }
 
-    public bool StepReeling(Transform hookTransform, Vector3 rodOrigin, float deltaTime, ClassBait activeBait, ClassFish hookedFish)
+    public bool StepReeling(Transform hookTransform, Vector3 rodOrigin, float deltaTime, ClassBait activeBait, ClassFish hookedFish, float reelInputScale = 1f)
     {
         if (hookTransform == null)
         {
@@ -227,7 +227,7 @@ public class FishingHookPhysics
             fishWeightFactor = Mathf.Clamp(hookedFish.FishCurWeight / hookedFish.DefaultWeight, 0.5f, 2f);
         }
 
-        float effectiveReelSpeed = Mathf.Max(0f, this.reelSpeed) / (baitWeight * fishWeightFactor);
+        float effectiveReelSpeed = (Mathf.Max(0f, this.reelSpeed) * Mathf.Clamp01(reelInputScale)) / (baitWeight * fishWeightFactor);
         Vector3 currentPos = hookTransform.position;
         Vector3 targetPos = new Vector3(rodOrigin.x, rodOrigin.y, currentPos.z);
 
