@@ -11,6 +11,7 @@ public static class GameInit
             return;
 
         DefaultSettings.Init();
+        Globals.Init();
         Controlls.Init();
         BlePacketReceiver.Init();
         Application.quitting += GameInit.Closing;
