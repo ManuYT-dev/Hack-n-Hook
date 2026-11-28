@@ -1,4 +1,3 @@
-using Assets.Scripts.FishMovement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -67,7 +66,7 @@ public class SpawnFish : MonoBehaviour
 
             if (!IsChunkInMaxBounds(row, column))
             {
-                Debug.Log($"[SpawnFish] {chunkName} ist außerhalb der Grenzen ({row}, {column}) vs Max ({DefaultSettings.max_chunk})");
+                Debug.Log($"[SpawnFish] {chunkName} ist auÃŸerhalb der Grenzen ({row}, {column}) vs Max ({DefaultSettings.max_chunk})");
                 continue;
             }
 
@@ -82,7 +81,7 @@ public class SpawnFish : MonoBehaviour
     {
         ChunkConfigs.Clear();
         
-        // Row 1: Hauptsächlich Barsche (8 Barsche, 1 Forelle, 1 Hecht)
+        // Row 1: HauptsÃ¤chlich Barsche (8 Barsche, 1 Forelle, 1 Hecht)
         ChunkConfigs["1_1"] = new FishSpawnConfig[]
         {
             new FishSpawnConfig { fishType = FishType.Barsch, spawnCount = 8 },
@@ -180,7 +179,7 @@ public class SpawnFish : MonoBehaviour
         
         if (!ChunkConfigs.ContainsKey(configKey))
         {
-            Debug.LogWarning($"[SpawnFishesInChunk] Keine Konfiguration für {configKey}");
+            Debug.LogWarning($"[SpawnFishesInChunk] Keine Konfiguration fÃ¼r {configKey}");
             return;
         }
 
@@ -197,7 +196,7 @@ public class SpawnFish : MonoBehaviour
                 Vector3 randomPosition = GetRandomPositionInBounds(bounds, chunkTransform.position);
                 SpawnFishAtPosition(randomPosition, config.fishType, chunkTransform);
             }
-            Debug.Log($"  - {config.fishType}: {config.spawnCount} Stück");
+            Debug.Log($"  - {config.fishType}: {config.spawnCount} StÃ¼ck");
         }
     }
 
@@ -225,7 +224,7 @@ public class SpawnFish : MonoBehaviour
         string fishTypeName = fishType.ToString();
         string scriptablePath = $"Scriptables/{fishTypeName}";
         
-        Debug.Log($"[SpawnFish] Versuche zu laden: {scriptablePath} für {fishTypeName}");
+        Debug.Log($"[SpawnFish] Versuche zu laden: {scriptablePath} fÃ¼r {fishTypeName}");
         
         ScriptableFish scriptableFish = Resources.Load<ScriptableFish>(scriptablePath);
 
@@ -255,6 +254,7 @@ public class SpawnFish : MonoBehaviour
 
         SpriteRenderer spriteRenderer = fishObject.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = scriptableFish.SpriteFish;
+        spriteRenderer.sortingLayerName = "Fishes";
         spriteRenderer.sortingOrder = 10;
 
         ClassFish fish = fishObject.AddComponent<ClassFish>();
