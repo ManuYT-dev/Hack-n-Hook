@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Forelle
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableFish
   fishName: Forelle
-  speed: 30
-  boostedSpeed: 40
+  speed: 90
+  boostedSpeed: 130
   defaultPrice: 15
-  roamRadius: 120
-  huntRadius: 200
+  roamRadius: 350
+  huntRadius: 500
   fishType: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 9219974e870542044846a34263f2a27c, type: 3}

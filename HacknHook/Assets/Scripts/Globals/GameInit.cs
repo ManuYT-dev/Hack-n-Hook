@@ -9,6 +9,7 @@ public static class GameInit
         if (SceneManager.GetActiveScene().name == "UnitTests")
             return;
 
+        DefaultSettings.Init();
         Controlls.Init();
         BlePacketReceiver.Init();
         Application.quitting += GameInit.Closing;

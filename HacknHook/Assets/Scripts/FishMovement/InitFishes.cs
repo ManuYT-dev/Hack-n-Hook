@@ -8,7 +8,7 @@ public static class InitFishes
     private static Sprite baitSprite;
     private static Canvas canvas;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     public static void Start()
     {
         Debug.Log("[InitFishes] Initialisierung gestartet.");
