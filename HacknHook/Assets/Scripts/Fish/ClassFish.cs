@@ -26,6 +26,7 @@ public class ClassFish : MonoBehaviour
     private float boostedSpeed;
     [Header("Movement Settings")]
     [SerializeField] private float stopDistance = 0.3f;
+    [SerializeField] private float biteDistance = 15f;
     [SerializeField] private float rotationSpeed = 4f;
     [SerializeField] private float maxVerticalAngle = 30f;
     #endregion
@@ -163,6 +164,16 @@ public class ClassFish : MonoBehaviour
                 this.UpdateStuck();
                 break;
         }
+    }
+
+    private void LateUpdate()
+    {
+        if (this.currentState != FishState.Stuck || !this.hasEaten)
+        {
+            return;
+        }
+
+        this.UpdateStuck();
     }
 
     private void OnDestroy()
@@ -344,11 +355,10 @@ public class ClassFish : MonoBehaviour
             {
                 Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} gibt Jagd auf - Bait zerstört oder bereits besetzt");
                 this.ResetToRoam();
+                return;
             }
-            else
-            {
-                this.targetPosition = this.GetBaitPositionInFishSpace(this.targetBait);
-            }
+
+            this.targetPosition = this.GetBaitPositionInFishSpace(this.targetBait);
         }
 
         Vector2 currentPos = this.rectTransform.anchoredPosition;
@@ -357,32 +367,21 @@ public class ClassFish : MonoBehaviour
         Vector2 directionToTarget = distanceToTarget > 0.0001f ? toTarget / distanceToTarget : Vector2.zero;
 
         float currentSpeed = this.isHunting ? this.boostedSpeed : this.speed;
+        float arrivalThreshold = this.isHunting ? Mathf.Max(this.stopDistance, this.biteDistance) : this.stopDistance;
 
-        if (distanceToTarget > this.stopDistance)
+        if (distanceToTarget > arrivalThreshold)
         {
             Vector2 newPos = Vector2.MoveTowards(currentPos, this.targetPosition, currentSpeed * Time.deltaTime);
             this.rectTransform.anchoredPosition = newPos;
             this.UpdateSpriteDirection(directionToTarget);
+            distanceToTarget = Vector2.Distance(newPos, this.targetPosition);
         }
-        else
+
+        if (distanceToTarget <= arrivalThreshold)
         {
             if (this.isHunting && this.targetBait != null)
             {
-                if (this.targetBait.TryClaim(this))
-                {
-                    // Fisch hat das Bait als Erster erreicht und geclaimed
-                    Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} hat Bait geclaimed und hängt am Haken");
-                    this.hasEaten = true;
-                    this.currentState = FishState.Stuck;
-                    Vector2 baitWorldPos = this.targetBait.GetWorldPosition();
-                    this.transform.position = new Vector3(baitWorldPos.x, baitWorldPos.y, this.transform.position.z);
-                }
-                else
-                {
-                    // Ein anderer Fisch war schneller
-                    Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} konnte Bait nicht claimen - ein anderer Fisch war schneller");
-                    this.ResetToRoam();
-                }
+                this.TryBiteTargetBait();
             }
             else if (!this.isHunting)
             {
@@ -391,6 +390,24 @@ public class ClassFish : MonoBehaviour
                 this.currentState = FishState.Waiting;
                 this.stateTimer = Random.Range(1f, 3f);
             }
+        }
+    }
+
+    private void TryBiteTargetBait()
+    {
+        if (this.targetBait != null && this.targetBait.TryClaim(this))
+        {
+            // Fisch hat das Bait als Erster erreicht und geclaimed
+            Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} hat Bait geclaimed und hängt am Haken");
+            this.hasEaten = true;
+            this.currentState = FishState.Stuck;
+            this.SyncPositionWithTargetBait();
+        }
+        else
+        {
+            // Ein anderer Fisch war schneller
+            Debug.Log($"[ClassFish.UpdateMoving] {this.fishName} konnte Bait nicht claimen - ein anderer Fisch war schneller");
+            this.ResetToRoam();
         }
     }
 
@@ -414,10 +431,9 @@ public class ClassFish : MonoBehaviour
     private void UpdateStuck()
     {
         // Fisch bleibt am Bait-Ort stecken
-        if (this.IsBaitAvailable(this.targetBait))
+        if (this.hasEaten && this.IsBaitAvailable(this.targetBait) && this.targetBait.ClaimedByFish == this)
         {
-            Vector2 baitWorldPos = this.targetBait.GetWorldPosition();
-            this.transform.position = new Vector3(baitWorldPos.x, baitWorldPos.y, this.transform.position.z);
+            this.SyncPositionWithTargetBait();
         }
         else
         {
@@ -425,6 +441,17 @@ public class ClassFish : MonoBehaviour
             Debug.Log($"[ClassFish.UpdateStuck] {this.fishName} Bait despawned oder ungültig - zurück zum Roamen");
             this.ResetToRoam();
         }
+    }
+
+    private void SyncPositionWithTargetBait()
+    {
+        if (this.targetBait == null || this.targetBait.IsDestroyed())
+        {
+            return;
+        }
+
+        Vector2 baitWorldPos = this.targetBait.GetWorldPosition();
+        this.transform.position = new Vector3(baitWorldPos.x, baitWorldPos.y, this.transform.position.z);
     }
 
     private void ResetToRoam()

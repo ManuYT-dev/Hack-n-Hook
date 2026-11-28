@@ -556,6 +556,66 @@ public class ClassFishingRodUnitTests : MonoBehaviour
                 Debug.unityLogger.logEnabled = prevLogEnabled;
             }
         });
+
+        // Fish within biteDistance claims moving bait immediately; competing fish leaves; LateUpdate keeps stuck fish synced
+        this.RunIsolated(() =>
+        {
+            ClassFishingRod rod = this.CreateRod("MovingBiteRod", new Vector3(0f, 300f, 0f));
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod.Physics, "waterSinkMultiplier", 2f);
+            SetPrivateField(rod, "defaultBaitFallSpeed", 50f);
+            rod.ExecuteCast(0.5f);
+            rod.StepRod(0.3f);
+
+            ClassBait bait = rod.ActiveBait;
+            Vector2 baitWorld = bait.GetWorldPosition();
+
+            ScriptableFish fishData = this.CreateScriptableFish("Barsch", FishType.Barsch, 70f, 110f, 5f, 300f, 450f);
+            ClassFish fish1 = this.CreateFish("BiteFish1", "Chunk_1_1", Vector3.zero, fishData, baitWorld + new Vector2(10f, 0f));
+            ClassFish fish2 = this.CreateFish("BiteFish2", "Chunk_1_1", Vector3.zero, fishData, baitWorld + new Vector2(30f, 0f));
+
+            bool prevLogEnabled = Debug.unityLogger.logEnabled;
+            try
+            {
+                Debug.unityLogger.logEnabled = false;
+
+                InvokePrivateMethod(fish1, "CheckForBait");
+                InvokePrivateMethod(fish2, "CheckForBait");
+
+                // Simulate hook sinking while fish1 is within biteDistance
+                rod.StepRod(0.02f);
+                InvokePrivateMethod(fish1, "UpdateMoving");
+
+                // Competing fish2 must leave when updating
+                InvokePrivateMethod(fish2, "CheckForBait");
+                InvokePrivateMethod(fish2, "UpdateMoving");
+
+                // Move hook and verify LateUpdate keeps fish1 stuck to it
+                Transform hookTransform = rod.Visuals.HookTransform;
+                hookTransform.position = new Vector3(180f, 210f, hookTransform.position.z);
+                InvokePrivateMethod(bait, "SyncPositionWithHook");
+                InvokePrivateMethod(fish1, "LateUpdate");
+
+                bool biteOk =
+                    fish1.IsHooked &&
+                    rod.HookedFish == fish1 &&
+                    bait.ClaimedByFish == fish1 &&
+                    !fish2.IsHooked &&
+                    !GetPrivateField<bool>(fish2, "isHunting") &&
+                    GetPrivateField<ClassBait>(fish2, "targetBait") == null;
+
+                bool lateSyncOk = Vector2.Distance((Vector2)fish1.transform.position, new Vector2(180f, 210f)) < 0.05f;
+
+                this.Record("Fish bites within biteDistance on moving hook, others leave, LateUpdate stays synced",
+                    biteOk && lateSyncOk,
+                    $"biteOk={biteOk}, lateSyncOk={lateSyncOk}");
+            }
+            finally
+            {
+                Debug.unityLogger.logEnabled = prevLogEnabled;
+            }
+        });
     }
     #endregion
 

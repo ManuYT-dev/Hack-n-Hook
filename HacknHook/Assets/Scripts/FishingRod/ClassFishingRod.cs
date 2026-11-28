@@ -435,8 +435,6 @@ public class ClassFishingRod : MonoBehaviour
         bait.OnFishClaimed += this.HandleFishClaimed;
         this.activeBait = bait;
         this.visuals.SetHookSprite(HookVisualState.Baited);
-        this.activeBait = bait;
-        this.visuals.SetHookSprite(HookVisualState.Baited);
 
         if (this.hookCameraSwitcher != null)
         {

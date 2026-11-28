@@ -5328,6 +5328,7 @@ MonoBehaviour:
   defaultAttractRadius: 200
   defaultBaitWeight: 1
   destroyFishOnCatchComplete: 1
+  reelDeadzone: 0.05
   hookCameraSwitcher: {fileID: 0}
 --- !u!114 &1765167676
 MonoBehaviour:
