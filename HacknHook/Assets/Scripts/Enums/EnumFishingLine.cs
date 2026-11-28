@@ -2,10 +2,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 [JsonConverter(typeof(StringEnumConverter))]
-public enum StringType
+public enum FishingLineType
 {
-    Cobweb,
-    String,
-    GoldString
+    Level1,
+    Level2,
+    Level3
 }
 
