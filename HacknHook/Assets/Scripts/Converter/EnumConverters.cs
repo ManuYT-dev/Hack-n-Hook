@@ -4,10 +4,10 @@ using UnityEngine;
 
 public static class BaitEnumToScriptables
 {
-    public static T Convert<T>(Enum value, string folder = "Assets/Resources/Scriptables/BaitScriptables")
+    public static T Convert<T>(Enum value, string folder = "Scriptables/BaitScriptables")
         where T : ScriptableObject
     {
-        string path = $"{folder}/{value}";
+        string path = $"{folder}/Bait{value}";
 
         T scriptable = Resources.Load<T>(path);
 
@@ -22,10 +22,10 @@ public static class BaitEnumToScriptables
 
 public static class FishingLineEnumToScriptables
 {
-    public static T Convert<T>(Enum value, string folder = "Assets/Resources/Scriptables/FishingLineScriptables")
+    public static T Convert<T>(Enum value, string folder = "Scriptables/FishingLineScriptable")
         where T : ScriptableObject
     {
-        string path = $"{folder}/{value}";
+        string path = $"{folder}/FishingLine{value.ToString().Replace("Level", string.Empty)}";
 
         T scriptable = Resources.Load<T>(path);
 
@@ -39,10 +39,10 @@ public static class FishingLineEnumToScriptables
 }
 public static class EngineEnumToScriptables
 {
-    public static T Convert<T>(Enum value, string folder = "Assets/Resources/Scriptables/FishingLineScriptables")
+    public static T Convert<T>(Enum value, string folder = "Scriptables/EngineScriptable")
         where T : ScriptableObject
     {
-        string path = $"{folder}/{value}";
+        string path = $"{folder}/Engine{value}";
 
         T scriptable = Resources.Load<T>(path);
 

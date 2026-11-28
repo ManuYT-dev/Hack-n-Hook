@@ -94,12 +94,12 @@ public class GlobalsSaveUnitTests : MonoBehaviour
 
         this.Assert("ResetToDefaults -> cash == 0", Mathf.Approximately(Globals.cash, 0f));
         this.Assert("ResetToDefaults -> totalCashEarned == 0", Mathf.Approximately(Globals.totalCashEarned, 0f));
-        this.Assert("ResetToDefaults -> equippedEngine == Level1", Globals.equippedEngine == EngineType.Level1);
-        this.Assert("ResetToDefaults -> bestPurchasedEngine == Level1", Globals.bestPurchasedEngine == EngineType.Level1);
-        this.Assert("ResetToDefaults -> equippedFishingLine == Level1", Globals.equippedFishingLine == FishingLineType.Level1);
-        this.Assert("ResetToDefaults -> bestPurchasedFishingLine == Level1", Globals.bestPurchasedFishingLine == FishingLineType.Level1);
-        this.Assert("ResetToDefaults -> equippedBait == Level1", Globals.equippedBait == BaitType.Level1);
-        this.Assert("ResetToDefaults -> bestPurchasedBait == Level1", Globals.bestPurchasedBait == BaitType.Level1);
+        this.Assert("ResetToDefaults -> equippedEngine == Level0", Globals.equippedEngine == EngineType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedEngine == Level0", Globals.bestPurchasedEngine == EngineType.Level0);
+        this.Assert("ResetToDefaults -> equippedFishingLine == Level0", Globals.equippedFishingLine == FishingLineType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedFishingLine == Level0", Globals.bestPurchasedFishingLine == FishingLineType.Level0);
+        this.Assert("ResetToDefaults -> equippedBait == Level0", Globals.equippedBait == BaitType.Level0);
+        this.Assert("ResetToDefaults -> bestPurchasedBait == Level0", Globals.bestPurchasedBait == BaitType.Level0);
         this.Assert("ResetToDefaults -> totalFishCaught == 0", Globals.totalFishCaught == 0);
         this.Assert("ResetToDefaults -> caughtFishCounts empty", Globals.caughtFishCounts != null && Globals.caughtFishCounts.Count == 0);
         this.Assert("ResetToDefaults -> boatInstance == null", Globals.boatInstance == null);

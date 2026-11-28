@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ScriptableBoat", menuName = "Scriptable Objects/ScriptableBoat")]
-public class ScriptableBoat : ScriptableObject
+[CreateAssetMenu(fileName = "ScriptableEngine", menuName = "Scriptable Objects/ScriptableEngine")]
+public class ScriptableEngine : ScriptableObject
 {
     #region Inspector Fields
     [SerializeField] private string boatName;
@@ -9,7 +9,6 @@ public class ScriptableBoat : ScriptableObject
     [SerializeField] private float boostedSpeed;
     [SerializeField] private float acceleration;
     [SerializeField] private float turnSpeed;
-    [SerializeField] private float defaultPrice;
     [SerializeField] private int maxCapacity;
     [SerializeField] private float buyPrice;
     [SerializeField] private int maxDistance;
@@ -22,7 +21,6 @@ public class ScriptableBoat : ScriptableObject
     public float BoostedSpeed => this.boostedSpeed;
     public float Acceleration => this.acceleration;
     public float TurnSpeed => this.turnSpeed;
-    public float DefaultPrice => this.defaultPrice;
     public int MaxCapacity => this.maxCapacity;
     public float BuyPrice => this.buyPrice;
     public int MaxDistance => this.maxDistance;
