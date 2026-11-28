@@ -275,7 +275,7 @@ public class SpawnFish : MonoBehaviour
         spriteRenderer.sortingOrder = 10;
 
         ClassFish fish = fishObject.AddComponent<ClassFish>();
-        fish.InitFish(scriptableFish, 1f, localPosition.x, localPosition.y);
+        fish.InitFish(scriptableFish, localPosition.x, localPosition.y);
 
         fishObject.transform.localScale = new Vector3(200f, 200f, 1f);
     }

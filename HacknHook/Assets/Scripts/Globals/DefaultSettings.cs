@@ -4,6 +4,6 @@ public static class DefaultSettings
 
     public static void Init()
     {
-        max_chunk = (3, 3);
+        max_chunk = (1, 1);
     }
 }

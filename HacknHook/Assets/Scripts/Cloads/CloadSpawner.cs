@@ -10,6 +10,9 @@ public class CloudSpawner : MonoBehaviour
     public float minTimeBetweenSpawns = 1f;
     public float maxTimeBetweenSpawns = 3f;
 
+    [Header("Vorlauf beim Start in Sekunden")]
+    public float prewarmSeconds = 10f;
+
     [Header("Zufällige Spawn-Höhe")]
     public float minSpawnYOffset = -3f;
     public float maxSpawnYOffset = 3f;
@@ -29,6 +32,17 @@ public class CloudSpawner : MonoBehaviour
     private void Start()
     {
         timeUntilNextSpawn = GetRandomSpawnTime();
+
+        float remainingWarmup = Mathf.Max(0f, prewarmSeconds);
+
+        while (remainingWarmup >= timeUntilNextSpawn)
+        {
+            remainingWarmup -= timeUntilNextSpawn;
+            SpawnCloud(remainingWarmup);
+            timeUntilNextSpawn = GetRandomSpawnTime();
+        }
+
+        timeUntilNextSpawn -= remainingWarmup;
     }
 
     private void Update()
@@ -52,7 +66,7 @@ public class CloudSpawner : MonoBehaviour
         return Random.Range(min, max);
     }
 
-    private void SpawnCloud()
+    private void SpawnCloud(float ageInSeconds = 0f)
     {
         if (cloudSprites == null || cloudSprites.Length == 0)
             return;
@@ -81,6 +95,12 @@ public class CloudSpawner : MonoBehaviour
             transform.position.y + Random.Range(lowY, highY),
             transform.position.z
         );
+
+        spawnPosition += Vector3.right * moveSpeed * ageInSeconds;
+
+        // Wolken, die während des Vorlaufs schon vorbeigezogen wären, nicht erzeugen.
+        if (spawnPosition.x >= despawnX)
+            return;
 
         GameObject cloud = new GameObject("Cloud_" + chosenSprite.name);
         cloud.transform.position = spawnPosition;
