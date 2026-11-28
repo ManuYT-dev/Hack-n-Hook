@@ -81,7 +81,7 @@ public class SpawnFish : MonoBehaviour
     private static void InitializeChunkConfigs()
     {
         ChunkConfigs.Clear();
-        
+
         // Row 1: Hauptsächlich Barsche (8 Barsche, 1 Forelle, 1 Hecht)
         ChunkConfigs["1_1"] = new FishSpawnConfig[]
         {
@@ -240,9 +240,9 @@ public class SpawnFish : MonoBehaviour
         // Konvertiere FishType zu String - mit expliziter Konvertierung
         string fishTypeName = fishType.ToString();
         string scriptablePath = $"Scriptables/{fishTypeName}";
-        
+
         Debug.Log($"[SpawnFish] Versuche zu laden: {scriptablePath} für {fishTypeName}");
-        
+
         ScriptableFish scriptableFish = Resources.Load<ScriptableFish>(scriptablePath);
 
         if (scriptableFish == null)
@@ -275,7 +275,7 @@ public class SpawnFish : MonoBehaviour
         spriteRenderer.sortingOrder = 10;
 
         ClassFish fish = fishObject.AddComponent<ClassFish>();
-        fish.InitFish(scriptableFish, 1f, localPosition.x, localPosition.y);
+        fish.InitFish(scriptableFish, localPosition.x, localPosition.y);
 
         fishObject.transform.localScale = new Vector3(200f, 200f, 1f);
     }

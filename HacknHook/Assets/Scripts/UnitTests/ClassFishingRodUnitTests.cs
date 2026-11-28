@@ -137,9 +137,9 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         {
             ClassFishingRod rod = this.CreateRod("DefaultRod", new Vector3(10f, 20f, 0f));
 
-            Transform hookTransform = GetPrivateField<Transform>(rod, "hookTransform");
-            SpriteRenderer hookRenderer = GetPrivateField<SpriteRenderer>(rod, "hookSpriteRenderer");
-            LineRenderer lineRenderer = GetPrivateField<LineRenderer>(rod, "stringLineRenderer");
+            Transform hookTransform = rod.Visuals.HookTransform;
+            SpriteRenderer hookRenderer = rod.Visuals.HookSpriteRenderer;
+            LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
             bool ok =
                 rod.CurrentState == RodState.Idle &&
@@ -166,7 +166,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("ColorRod");
-            LineRenderer lineRenderer = GetPrivateField<LineRenderer>(rod, "stringLineRenderer");
+            LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
             rod.ApplyStringColor(StringType.GoldString);
             Color goldExpected = new(1f, 0.84f, 0.2f, 1f);
@@ -194,7 +194,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             SetPrivateField(rod, "equippedBaitData", baitData);
             go.SetActive(true);
 
-            LineRenderer lineRenderer = GetPrivateField<LineRenderer>(rod, "stringLineRenderer");
+            LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
             bool awakeOk =
                 rod.EquippedStringData == stringData &&
                 rod.EquippedBaitData == baitData &&
@@ -230,8 +230,8 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             rod.OnReadyModeChanged += v => readyEvents.Add(v);
             rod.OnStateChanged += s => stateEvents.Add(s);
 
-            Transform hookTransform = GetPrivateField<Transform>(rod, "hookTransform");
-            LineRenderer lineRenderer = GetPrivateField<LineRenderer>(rod, "stringLineRenderer");
+            Transform hookTransform = rod.Visuals.HookTransform;
+            LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
             // Key.X press -> Ready
             SendKeyboard(keyboard, new KeyboardState(Key.X));
@@ -304,25 +304,25 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("PausedRod", new Vector3(0f, 100f, 0f));
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
-            SetPrivateField(rod, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
 
             rod.ExecuteCast(0.5f);
-            rod.StepRod(0.1f); // Finish cast travel to apex and spawn/attach bait
-            Vector3 castPos = GetPrivateField<Transform>(rod, "hookTransform").position;
+            rod.StepRod(0.3f); // Finish airborne arc to water surface and spawn/attach bait
+            Vector3 castPos = rod.Visuals.HookTransform.position;
 
             Globals.isPaused = true;
             rod.StepRod(1.0f);
             bool stayedCastDuringPause =
                 rod.CurrentState == RodState.Cast &&
                 rod.ActiveBait != null &&
-                Vector3.Distance(GetPrivateField<Transform>(rod, "hookTransform").position, castPos) < 0.001f;
+                Vector3.Distance(rod.Visuals.HookTransform.position, castPos) < 0.001f;
 
             Globals.isPaused = false;
             rod.StepRod(0.5f);
             bool resumedSinkingAfterUnpause =
                 rod.CurrentState == RodState.Cast &&
-                GetPrivateField<Transform>(rod, "hookTransform").position.y < castPos.y;
+                rod.Visuals.HookTransform.position.y < castPos.y;
 
             this.Record("Globals.isPaused freezes rod without cancelling active cast",
                 stayedCastDuringPause && resumedSinkingAfterUnpause,
@@ -331,18 +331,18 @@ public class ClassFishingRodUnitTests : MonoBehaviour
     }
     #endregion
 
-    #region CastSpeed Sampling & +45° Physics Tests
+    #region CastSpeed Sampling & +45° Airborne/Water Physics Tests
     private void RunCastSpeedSamplingAndPhysicsTests(Mouse mouse, Keyboard keyboard, BleControllerDevice ble)
     {
         // 1. CastSpeed below minThrowSpeed stays Ready; above minThrowSpeed samples peak over window & clamps [0.5, 1.5]
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("SamplingRod", new Vector3(0f, 200f, 0f));
-            SetPrivateField(rod, "minThrowSpeed", 0.25f);
-            SetPrivateField(rod, "maxThrowSpeed", 1.0f);
-            SetPrivateField(rod, "castSampleDuration", 0.15f);
-            SetPrivateField(rod, "baseCastDistance", 200f);
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
+            SetPrivateField(rod.Physics, "minThrowSpeed", 0.25f);
+            SetPrivateField(rod.Physics, "maxThrowSpeed", 1.0f);
+            SetPrivateField(rod.Physics, "castSampleDuration", 0.15f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
 
             rod.ToggleReady();
 
@@ -396,7 +396,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
                 $"belowOk={belowThresholdStaysReady}, sampling={enteredSampling}, fastMult={fastMult:F3}, slowMult={slowMult:F5}");
         });
 
-        // 2. Hook launches +45° upward in facing direction, spawns bait, and sinks at bait.FallSpeed down to String.MaxDepth
+        // 2. Hook launches +45° airborne arc, enters water to spawn bait, sinks at scaled speed, clamps to String.MaxDepth
         this.RunIsolated(() =>
         {
             Vector3 origin = new(100f, 300f, 0f);
@@ -405,35 +405,48 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             ScriptableBait baitData = this.CreateScriptableBait("SinkBait", 100f, 200f, 1f, this.CreateTestSprite());
             rod.SetEquippedString(stringData);
             rod.SetEquippedBait(baitData);
-            SetPrivateField(rod, "baseCastDistance", 200f);
-            SetPrivateField(rod, "castTravelSpeed", 1000f);
-            SetPrivateField(rod, "castAngleDegrees", 45f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 600f);
+            SetPrivateField(rod.Physics, "waterSurfaceOffsetY", 0f);
+            SetPrivateField(rod.Physics, "waterSinkMultiplier", 0.25f);
 
-            // Launch right (+1) at 1.0x speed -> target is +45° up & right
+            // Launch right (+1) at 1.0x speed -> hardcoded 45° velocity (vx == vy > 0)
             rod.ExecuteCast(Mathf.Lerp(0.25f, 1.0f, 0.5f));
-            Vector3 target = GetPrivateField<Vector3>(rod, "castTravelTarget");
-            float expectedDelta = 200f * Mathf.Cos(45f * Mathf.Deg2Rad);
+            Vector2 launchVel = rod.Physics.Velocity;
             bool launchUp45Right =
-                Mathf.Abs((target.x - origin.x) - expectedDelta) < 0.5f &&
-                Mathf.Abs((target.y - origin.y) - expectedDelta) < 0.5f &&
-                target.y > origin.y;
+                launchVel.x > 0f &&
+                launchVel.y > 0f &&
+                Mathf.Abs(launchVel.x - launchVel.y) < 0.01f;
 
-            // Advance travel past arrival so bait spawns & attaches
-            rod.StepRod(0.5f);
-            Transform hookTransform = GetPrivateField<Transform>(rod, "hookTransform");
-            bool baitAttachedAtApex =
+            // Short airborne step stays above water with no bait spawned yet
+            rod.StepRod(0.1f);
+            Transform hookTransform = rod.Visuals.HookTransform;
+            bool airbornePhaseOk =
+                !rod.Physics.IsInWater &&
+                rod.ActiveBait == null &&
+                hookTransform.position.x > origin.x &&
+                hookTransform.position.y > origin.y;
+
+            // Step until hook hits waterY (~0.82s for dist=200, g=600) & spawns bait
+            for (int i = 0; i < 60 && !rod.Physics.IsInWater; i++)
+            {
+                rod.StepRod(0.02f);
+            }
+            bool enteredWaterAndBaited =
+                rod.Physics.IsInWater &&
                 rod.ActiveBait != null &&
                 rod.ActiveBait.IsAttachedToHook &&
-                Mathf.Abs(hookTransform.position.y - target.y) < 0.1f;
+                Mathf.Abs(hookTransform.position.y - origin.y) < 1f &&
+                Mathf.Abs((hookTransform.position.x - origin.x) - 200f) < 10f;
 
-            // Sink for 0.5s -> should descend by fallSpeed (100) * 0.5 = 50 units
+            // Sink for 0.5s -> should descend at fallSpeed (100) * waterSinkMultiplier (0.25) * 0.5 = 12.5 units
             float yBeforeSink = hookTransform.position.y;
             rod.StepRod(0.5f);
-            bool sankAtBaitSpeed = Mathf.Abs((yBeforeSink - hookTransform.position.y) - 50f) < 0.5f;
+            bool sankSlowlyInWater = Mathf.Abs((yBeforeSink - hookTransform.position.y) - 12.5f) < 0.5f;
 
-            // Sink long enough to hit ScriptableString.MaxDepth (origin.y - 250 = 50)
-            rod.StepRod(5.0f);
-            rod.StepRod(1.0f);
+            // Sink long enough to hit ScriptableString.MaxDepth (waterY - 250 = 50)
+            rod.StepRod(12.0f);
+            rod.StepRod(2.0f);
             float minY = origin.y - 250f;
             bool clampedAtStringMaxDepth = Mathf.Abs(hookTransform.position.y - minY) < 0.01f;
 
@@ -446,12 +459,15 @@ public class ClassFishingRodUnitTests : MonoBehaviour
 
             rod.CancelAndResetToIdle();
             rod.ExecuteCast(1.0f);
-            Vector3 leftTarget = GetPrivateField<Vector3>(rod, "castTravelTarget");
-            bool launchUp45Left = leftTarget.x < origin.x && leftTarget.y > origin.y;
+            Vector2 leftVel = rod.Physics.Velocity;
+            bool launchUp45Left =
+                leftVel.x < 0f &&
+                leftVel.y > 0f &&
+                Mathf.Abs(-leftVel.x - leftVel.y) < 0.01f;
 
-            this.Record("Hook casts +45° up in facing direction & sinks at bait FallSpeed to String.MaxDepth",
-                launchUp45Right && baitAttachedAtApex && sankAtBaitSpeed && clampedAtStringMaxDepth && launchUp45Left,
-                $"up45R={launchUp45Right}, bait={baitAttachedAtApex}, sink={sankAtBaitSpeed}, clamped={clampedAtStringMaxDepth}, up45L={launchUp45Left}");
+            this.Record("Hook casts 45° air arc, enters water to spawn bait, sinks slowly to String.MaxDepth",
+                launchUp45Right && airbornePhaseOk && enteredWaterAndBaited && sankSlowlyInWater && clampedAtStringMaxDepth && launchUp45Left,
+                $"up45R={launchUp45Right}, air={airbornePhaseOk}, water={enteredWaterAndBaited}, sink={sankSlowlyInWater}, clamped={clampedAtStringMaxDepth}, up45L={launchUp45Left}");
         });
     }
     #endregion
@@ -463,11 +479,11 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("HookBiteRod", new Vector3(0f, 300f, 0f));
-            SetPrivateField(rod, "baseCastDistance", 200f);
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
-            SetPrivateField(rod, "fallbackBaitFallSpeed", 0f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod, "defaultBaitFallSpeed", 0f);
             rod.ExecuteCast(0.5f);
-            rod.StepRod(0.1f);
+            rod.StepRod(0.3f);
 
             ClassBait bait = rod.ActiveBait;
             Vector2 baitWorld = bait.GetWorldPosition();
@@ -496,7 +512,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
                 bool secondClaimRejected = !bait.TryClaim(fish2);
 
                 // Move hook tip elsewhere and verify Fish 1 follows in UpdateStuck
-                Transform hookTransform = GetPrivateField<Transform>(rod, "hookTransform");
+                Transform hookTransform = rod.Visuals.HookTransform;
                 hookTransform.position = new Vector3(123f, 234f, hookTransform.position.z);
                 InvokePrivateMethod(bait, "SyncPositionWithHook");
                 InvokePrivateMethod(fish1, "UpdateStuck");
@@ -532,12 +548,12 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         {
             Vector3 origin = Vector3.zero;
             ClassFishingRod rod = this.CreateRod("ReelCatchRod", origin);
-            SetPrivateField(rod, "baseCastDistance", 200f);
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
-            SetPrivateField(rod, "reelSpeed", 100f);
-            SetPrivateField(rod, "reelCompleteDistance", 25f);
-            SetPrivateField(rod, "fallbackBaitWeight", 2f); // effective reelSpeed = 100 / 2 = 50/s
-            SetPrivateField(rod, "fallbackBaitFallSpeed", 0f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 200f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod.Physics, "reelSpeed", 100f);
+            SetPrivateField(rod.Physics, "reelCompleteDistance", 25f);
+            SetPrivateField(rod, "defaultBaitWeight", 2f); // effective reelSpeed = 100 / 2 = 50/s
+            SetPrivateField(rod, "defaultBaitFallSpeed", 0f);
 
             bool callbackReceivedValidFish = false;
             ClassFish eventFish = null;
@@ -550,8 +566,8 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             };
 
             rod.ExecuteCast(0.5f);
-            rod.StepRod(0.1f);
-            Transform hookTransform = GetPrivateField<Transform>(rod, "hookTransform");
+            rod.StepRod(0.3f);
+            Transform hookTransform = rod.Visuals.HookTransform;
             hookTransform.position = new Vector3(100f, 0f, 0f);
             InvokePrivateMethod(rod.ActiveBait, "SyncPositionWithHook");
 
@@ -607,16 +623,16 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("EmptyReelRod", Vector3.zero);
-            SetPrivateField(rod, "baseCastDistance", 100f);
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
-            SetPrivateField(rod, "reelSpeed", 500f);
-            SetPrivateField(rod, "reelCompleteDistance", 25f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 100f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod.Physics, "reelSpeed", 500f);
+            SetPrivateField(rod.Physics, "reelCompleteDistance", 25f);
 
             int callbackCount = 0;
             rod.OnFishReeledIn += fish => callbackCount++;
 
             rod.ExecuteCast(0.5f);
-            rod.StepRod(0.1f);
+            rod.StepRod(0.3f);
             bool hadBaitBeforeReel = rod.ActiveBait != null;
 
             SendMouse(mouse, new MouseState().WithButton(MouseButton.Right, true));
@@ -639,11 +655,11 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             ClassFishingRod rod = this.CreateRod("CancelRod", Vector3.zero);
-            SetPrivateField(rod, "baseCastDistance", 100f);
-            SetPrivateField(rod, "castTravelSpeed", 10000f);
-            SetPrivateField(rod, "fallbackBaitFallSpeed", 0f);
+            SetPrivateField(rod.Physics, "baseCastDistance", 100f);
+            SetPrivateField(rod.Physics, "airGravity", 10000f);
+            SetPrivateField(rod, "defaultBaitFallSpeed", 0f);
             rod.ExecuteCast(0.5f);
-            rod.StepRod(0.1f);
+            rod.StepRod(0.3f);
 
             ScriptableFish fishData = this.CreateScriptableFish("Hecht", FishType.Hecht, 90f, 140f, 30f, 200f, 400f);
             ClassFish fish = this.CreateFish("ReleasedHecht", "Pond", Vector3.zero, fishData, Vector2.zero);
@@ -694,7 +710,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             yield return null;
             yield return null;
 
-            LineRenderer line = GetPrivateField<LineRenderer>(rod, "stringLineRenderer");
+            LineRenderer line = rod.Visuals.StringLineRenderer;
             Vector3 p0 = line.GetPosition(0);
             Vector3 p1 = line.GetPosition(1);
 
@@ -779,7 +795,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         try
         {
             Debug.unityLogger.logEnabled = false;
-            fish.InitFish(data, 1f, localPos.x, localPos.y);
+            fish.InitFish(data, localPos.x, localPos.y);
         }
         finally
         {

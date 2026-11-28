@@ -11,6 +11,7 @@ public static class Controlls
     public static void Init()
     {
         BleControllerDevice.Init();
+        Controlls.inputActions.devices = null;
         Controlls.inputActions.Enable();
     }
 
@@ -18,7 +19,7 @@ public static class Controlls
     {
         BlePacketReceiver.Shutdown();
         Controlls.inputActions.Disable();
-        Controlls.inputActions.Dispose();
+        Controlls.inputActions.devices = null;
     }
     #endregion
 }
