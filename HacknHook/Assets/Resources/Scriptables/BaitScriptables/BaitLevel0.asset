@@ -16,5 +16,5 @@ MonoBehaviour:
   fallSpeed: 50
   attractRadius: 100
   weightMultiplier: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: eaab597738d986d43aa3439afc6e25cb, type: 3}
   StandardPrice: 0

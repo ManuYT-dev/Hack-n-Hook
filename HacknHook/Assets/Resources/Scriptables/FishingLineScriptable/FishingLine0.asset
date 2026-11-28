@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ba0303b73d65ee4eb30e7138df5368c, type: 3}
   m_Name: FishingLine0
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableFishingLine
-  deapth: 0
+  deapth: 1000
   buyPrice: 0
   sprite: {fileID: 0}

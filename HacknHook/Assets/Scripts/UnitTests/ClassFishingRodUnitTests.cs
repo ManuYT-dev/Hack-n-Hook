@@ -168,7 +168,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
             ClassFishingRod rod = this.CreateRod("ColorRod");
             LineRenderer lineRenderer = rod.Visuals.StringLineRenderer;
 
-            rod.ApplyStringColor(StringType.GoldString);
+            rod.ApplyStringColor(FishingLineType.Level2);
             Color goldExpected = new(1f, 0.84f, 0.2f, 1f);
             bool goldOk = ColorsApproxEqual(lineRenderer.startColor, goldExpected) && ColorsApproxEqual(lineRenderer.endColor, goldExpected);
 
@@ -184,7 +184,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         this.RunIsolated(() =>
         {
             Color seafoam = new(0.2f, 0.85f, 0.75f, 1f);
-            ScriptableString stringData = this.CreateScriptableString("DeepSilk", 420f, seafoam);
+            ScriptableFishingLine stringData = this.CreateScriptableString("DeepSilk", 420f, seafoam);
             ScriptableBait baitData = this.CreateScriptableBait("HeavyWorm", 85f, 250f, 1.4f, null);
 
             GameObject go = this.Track(new GameObject("ConfiguredRod"));
@@ -202,7 +202,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
                 Mathf.Approximately(rod.CurrentBaitFallSpeed, 85f) &&
                 ColorsApproxEqual(lineRenderer.startColor, seafoam);
 
-            ScriptableString secondString = this.CreateScriptableString("SteelWire", 900f, Color.cyan);
+            ScriptableFishingLine secondString = this.CreateScriptableString("SteelWire", 900f, Color.cyan);
             ScriptableBait secondBait = this.CreateScriptableBait("FastSpinner", 140f, 300f, 1.1f, null);
             rod.SetEquippedString(secondString);
             rod.SetEquippedBait(secondBait);
@@ -401,7 +401,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         {
             Vector3 origin = new(100f, 300f, 0f);
             ClassFishingRod rod = this.CreateRod("ArcAndDepthRod", origin);
-            ScriptableString stringData = this.CreateScriptableString("TestString", 250f, Color.white);
+            ScriptableFishingLine stringData = this.CreateScriptableString("TestString", 250f, Color.white);
             ScriptableBait baitData = this.CreateScriptableBait("SinkBait", 100f, 200f, 1f, this.CreateTestSprite());
             rod.SetEquippedString(stringData);
             rod.SetEquippedBait(baitData);
@@ -805,9 +805,9 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         return fish;
     }
 
-    private ScriptableString CreateScriptableString(string name, float maxDepth, Color color)
+    private ScriptableFishingLine CreateScriptableString(string name, float maxDepth, Color color)
     {
-        ScriptableString data = this.Track(ScriptableObject.CreateInstance<ScriptableString>());
+        ScriptableFishingLine data = this.Track(ScriptableObject.CreateInstance<ScriptableFishingLine>());
         SetPrivateField(data, "stringName", name);
         SetPrivateField(data, "maxDepth", maxDepth);
         SetPrivateField(data, "color", color);
