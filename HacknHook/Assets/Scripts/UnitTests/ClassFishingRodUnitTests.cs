@@ -779,7 +779,7 @@ public class ClassFishingRodUnitTests : MonoBehaviour
         try
         {
             Debug.unityLogger.logEnabled = false;
-            fish.InitFish(data, 1f, localPos.x, localPos.y);
+            fish.InitFish(data, localPos.x, localPos.y);
         }
         finally
         {
