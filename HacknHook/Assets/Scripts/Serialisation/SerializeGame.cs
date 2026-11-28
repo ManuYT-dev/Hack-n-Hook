@@ -45,7 +45,7 @@ public static class SerializeGame
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[SaveGame.Save] Failed to save game: {ex.Message}");
+            Debug.LogError($"[SerializeGame.Save] Failed to save game: {ex.Message}");
             return false;
         }
     }
@@ -59,7 +59,7 @@ public static class SerializeGame
         string path = SaveFilePath;
         if (!File.Exists(path))
         {
-            Debug.LogWarning($"[SaveGame.Load] No save file found at {path}.");
+            Debug.LogWarning($"[SerializeGame.Load] No save file found at {path}.");
             return false;
         }
 
@@ -70,7 +70,7 @@ public static class SerializeGame
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[SaveGame.Load] Failed to read save file: {ex.Message}");
+            Debug.LogError($"[SerializeGame.Load] Failed to read save file: {ex.Message}");
             return false;
         }
     }
@@ -102,7 +102,7 @@ public static class SerializeGame
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[SaveGame.DeleteSave] Failed to delete save file: {ex.Message}");
+            Debug.LogError($"[SerializeGame.DeleteSave] Failed to delete save file: {ex.Message}");
             return false;
         }
     }

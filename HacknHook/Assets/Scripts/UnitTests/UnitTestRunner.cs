@@ -8,6 +8,7 @@ public class UnitTestRunner : MonoBehaviour
     {
         this.AddComponent<InputUnitTests>();
         this.AddComponent<ClassBoatUnitTests>();
+        this.AddComponent<GlobalsSaveUnitTests>();
     }
     #endregion
 }

@@ -34,12 +34,12 @@ public class ClassBoatUnitTests : MonoBehaviour
 
     private void OnGUI()
     {
-        float x = Screen.width * 0.5f + 8f;
-        float width = Mathf.Max(200f, Screen.width * 0.5f - 24f);
-        GUILayout.BeginArea(new Rect(x, 16f, width, Screen.height - 32f));
-        GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
+        float colWidth = Mathf.Max(180f, (Screen.width - 64f) / 3f);
+        float x = 16f + colWidth + 16f;
+        GUILayout.BeginArea(new Rect(x, 16f, colWidth, Screen.height - 32f));
+        GUIStyle headerStyle = new(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold };
         headerStyle.normal.textColor = this._failed == 0 ? Color.green : Color.red;
-        GUILayout.Label($"ClassBoat Unit Tests: {this._passed} passed, {this._failed} failed", headerStyle);
+        GUILayout.Label($"ClassBoat: {this._passed} passed, {this._failed} failed", headerStyle);
         this._scrollPos = GUILayout.BeginScrollView(this._scrollPos);
         foreach (string line in this._results)
         {
