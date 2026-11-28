@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Hecht
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableFish
   fishName: Hecht
-  speed: 35
-  boostedSpeed: 40
+  speed: 100
+  boostedSpeed: 150
   defaultPrice: 10
-  roamRadius: 120
-  huntRadius: 160
+  roamRadius: 300
+  huntRadius: 550
   fishType: 2
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 853559fb1254e3a46ac4f653b8536b3b, type: 3}

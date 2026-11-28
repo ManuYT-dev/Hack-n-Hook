@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Barsch
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableFish
   fishName: Barsch
-  speed: 20
-  boostedSpeed: 40
+  speed: 70
+  boostedSpeed: 110
   defaultPrice: 5
-  roamRadius: 120
-  huntRadius: 180
+  roamRadius: 300
+  huntRadius: 450
   fishType: 0
   sprite: {fileID: 0}
