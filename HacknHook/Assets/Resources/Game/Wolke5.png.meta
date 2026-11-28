@@ -5,12 +5,6 @@ TextureImporter:
   - first:
       213: 2859013971467230534
     second: Wolke5_0
-  - first:
-      213: 2075936319045565286
-    second: Wolke5_1
-  - first:
-      213: 2293611408463001130
-    second: Wolke5_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -124,10 +118,10 @@ TextureImporter:
       name: Wolke5_0
       rect:
         serializedVersion: 2
-        x: 167
-        y: 0
-        width: 6
-        height: 16
+        x: 0
+        y: 8
+        width: 250
+        height: 89
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,50 +132,6 @@ TextureImporter:
       bones: []
       spriteID: 64dde213f024da720800000000000000
       internalID: 2859013971467230534
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Wolke5_1
-      rect:
-        serializedVersion: 2
-        x: 177
-        y: 0
-        width: 14
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 66bfa0955153fcc10800000000000000
-      internalID: 2075936319045565286
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Wolke5_2
-      rect:
-        serializedVersion: 2
-        x: 195
-        y: 0
-        width: 26
-        height: 18
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a2678368c6b84df10800000000000000
-      internalID: 2293611408463001130
       vertices: []
       indices: 
       edges: []
@@ -201,8 +151,6 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       Wolke5_0: 2859013971467230534
-      Wolke5_1: 2075936319045565286
-      Wolke5_2: 2293611408463001130
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
